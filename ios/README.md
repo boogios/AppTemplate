@@ -50,6 +50,70 @@ Xcode가 열리면 상단에서 `AppTemplate` 스킴과 iPhone Simulator를 선�
 고치기보다 `project.yml`을 수정한 뒤 `xcodegen generate`를 실행해야 다음에
 프로젝트를 다시 만들어도 변경사항이 유지됩니다.
 
+## 중요한 파일부터 이해하기
+
+처음에는 아래 순서로 보면 됩니다.
+
+| 파일 또는 폴더 | 역할 | 초보자에게 중요한 이유 |
+| --- | --- | --- |
+| `AGENTS.md` | 템플릿 유지·검증 규칙 | 설정 탭, 다국어, 테스트를 실수로 지우지 않게 해줍니다. |
+| `DESIGN.md` | 화면 디자인 규칙 | 색상·폰트·여백을 앱 전체에서 통일합니다. |
+| `project.yml` | XcodeGen 원본 설정 | Xcode 프로젝트를 직접 수정하지 않고 여기서 관리합니다. |
+| `AppTemplateApp.swift` | 앱 시작점 | Store 주입, 테마, 생명주기, SDK 초기화를 연결합니다. |
+| `Global/Config.swift` | 공개 앱 설정 | 앱 이름, 브랜드 색상, URL, 상품 ID를 바꿉니다. |
+| `Store/` | 상태와 저장 로직 | 온보딩·설정·구독 상태를 화면과 분리합니다. |
+| `View/Home/` | 기본 홈 화면 | 제품의 첫 화면을 만들 때 시작합니다. |
+| `View/MyPage/` | 기본 설정 화면 | 언어·테마·프리미엄·링크 메뉴를 관리합니다. |
+| `View/Onboarding/` | 첫 실행 화면 | 소개, 닉네임, 권한 안내 흐름을 관리합니다. |
+| `View/Premium/` | 구독 화면 | StoreKit 상품과 페이월 UI를 연결합니다. |
+| `Global/Localization/` | 다국어 문구 | SwiftUI 코드에 문장을 직접 쓰지 않게 합니다. |
+| `Global/Managers/` | 외부 SDK·시스템 연결 | 광고·분석·ATT·리뷰 요청을 한 곳에서 관리합니다. |
+
+### 앱을 바꿀 때의 기본 순서
+
+1. `Global/Config.swift`의 앱 이름, 색상, URL, 상품 ID를 바꿉니다.
+2. `project.yml`의 앱 식별자와 버전을 확인합니다.
+3. `View/Home/HomeView.swift`에서 홈 화면을 제품에 맞게 수정합니다.
+4. 설정 메뉴는 `View/MyPage/SettingMenu.swift`와 `MyPageView.swift`를
+   확인합니다.
+5. 새 기능은 작은 경우 `View/`, 커진 기능은 `Features/<Feature>/`에 둡니다.
+6. 문구는 `*L10n.swift`와 모든 로케일에 추가합니다.
+7. `xcodegen generate` 후 빌드와 테스트를 실행합니다.
+
+### iOS 키 값 관리
+
+`Configs/AppSecrets.xcconfig.example`에는 필요한 키 이름만 안전한 예시 값으로
+들어 있습니다. 다음처럼 복사한 뒤 실제 앱의 키를 입력합니다.
+
+```sh
+cp Configs/AppSecrets.xcconfig.example Configs/AppSecrets.xcconfig
+```
+
+`AppSecrets.xcconfig`에는 다음 값이 들어갑니다.
+
+- `ADMOB_APP_ID`, `ADMOB_BANNER_ID`, `ADMOB_NATIVE_ID`, `ADMOB_REWARD_ID`
+- `ADMOB_TEST_DEVICE`
+- `MIXPANEL_TOKEN`
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_REDIRECT_URL`
+
+이 파일은 `.gitignore`에 등록되어 있어 Git에 올리지 않습니다. 앱 이름,
+브랜드 색상, 외부 URL, StoreKit 상품 ID는 비밀 키가 아니므로
+`Global/Config.swift`에서 앱별로 변경합니다. 그래도 앱마다 다른 값을 사용해야
+하며 다른 앱의 키를 복사하지 않습니다.
+
+### 외부 기능이 연결되는 위치
+
+- 광고: `Global/Managers/AdMobManager.swift`와 `View/Common/AdMob/`
+- 개인정보 동의: UMP가 먼저 처리되고, iOS ATT는 광고 설정과 권한 상태에 따라
+  조건부로 요청됩니다.
+- 분석: `Global/Managers/MixpanelManager.swift`
+- 결제: `Store/PremiumStore.swift`와 `View/Premium/PremiumPaywallView.swift`
+- 리뷰: `Global/Managers/AppReviewRequester.swift`
+- 알림 권한: `Global/Managers/NotificationAuthorizationManager.swift`
+
+키가 placeholder이면 해당 기능이 실행되지 않는 것이 정상입니다. 먼저 앱의
+화면 흐름을 완성한 다음 실제 키를 넣고 외부 서비스 연결을 확인하세요.
+
 ## Create A New App
 
 From the workspace root:

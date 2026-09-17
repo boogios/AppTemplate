@@ -43,6 +43,54 @@ Boogios 스타일의 네이티브 iOS·Android 앱을 빠르게 시작하기 위
 앱을 실행한 뒤 화면 구조를 이해하고, 실제 서비스 준비가 끝났을 때 키를
 추가하는 것이 안전합니다.
 
+## 가장 중요한 파일들
+
+처음에는 모든 파일을 이해하려고 하지 않아도 됩니다. 아래 파일부터 보면
+템플릿의 전체 구조를 빠르게 파악할 수 있습니다.
+
+| 파일 | 역할 | 언제 수정하나요? |
+| --- | --- | --- |
+| `AGENTS.md` | 앱 구조와 작업·검증 규칙 | 코드를 수정하기 전에 확인 |
+| `DESIGN.md` | 색상, 폰트, 간격, 컴포넌트 등 화면 규칙 | 새 화면을 만들 때 확인 |
+| `README.md` | 실행 방법과 폴더 설명 | 처음 시작하거나 문제가 생겼을 때 |
+| iOS `project.yml` | Xcode 프로젝트의 원본 설정 | 타깃·파일·빌드 설정을 바꿀 때 |
+| iOS `Global/Config.swift` | 앱 이름, URL, 상품 ID | 앱 정체성을 바꿀 때 |
+| Android `core/config/AppConfig.kt` | 앱 이름, URL, 상품 ID | 앱 정체성을 바꿀 때 |
+| iOS `Configs/AppSecrets.xcconfig` | 광고·분석·Supabase 키 | iOS 실제 서비스를 연결할 때 |
+| Android `local.properties` | 광고·분석·Supabase 키와 SDK 경로 | Android 실제 서비스를 연결할 때 |
+| iOS `Global/Localization/*L10n.swift` | 화면 문구 | iOS 문구를 추가·수정할 때 |
+| Android `res/values*/strings.xml` | 언어별 화면 문구 | Android 문구를 추가·수정할 때 |
+| iOS `Store/`·Android `data/` | 앱 상태와 저장·결제 로직 | 상태 관리나 결제를 바꿀 때 |
+| iOS `View/`·Android `features/` | 실제 화면 코드 | 화면이나 제품 기능을 만들 때 |
+
+### `AGENTS.md`
+
+사람과 코딩 도구가 템플릿을 일관되게 수정하기 위한 약속입니다. 예를 들어
+설정 탭을 실수로 삭제하지 않기, 문구를 코드에 직접 쓰지 않기, 외부 SDK를
+placeholder 상태에서 호출하지 않기, 변경 후 어떤 테스트를 실행할지 등이
+적혀 있습니다. 코드를 실행하는 파일은 아니지만, 템플릿의 안전장치 역할을
+합니다.
+
+### `DESIGN.md`
+
+화면을 예쁘게 만드는 방법만 적은 문서가 아니라, 앱 전체가 같은 느낌을
+유지하도록 하는 기준표입니다. 브랜드 색상, Pretendard 폰트, 화면 여백,
+카드 모서리, 버튼 크기, 설정 화면 구성, 온보딩과 페이월 기본값이 적혀
+있습니다. 화면마다 임의의 색상·간격을 새로 만들기 전에 이 파일과 공통
+컴포넌트를 먼저 확인합니다.
+
+### 키 값 관리
+
+키 값은 코드나 README에 직접 넣지 않습니다. `*.example` 파일은 어떤 이름의
+값이 필요한지 보여주는 안전한 샘플이고, 실제 파일은 복사해서 로컬에만
+만듭니다. 실제 키가 없으면 placeholder 상태로 앱을 실행할 수 있으며 광고,
+Mixpanel, Supabase는 동작하지 않는 것이 정상입니다.
+
+- iOS: `Configs/AppSecrets.xcconfig.example` → `Configs/AppSecrets.xcconfig`
+- Android: `local.properties.example` → `local.properties`
+- 결제 상품 ID와 앱 URL도 앱별로 바꿔야 합니다.
+- `.env`, `.p8`, 서명 파일, 로컬 설정 파일은 Git에 올리지 않습니다.
+
 ## 가장 쉬운 확인 방법
 
 ### iOS만 확인하기

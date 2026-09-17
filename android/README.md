@@ -59,6 +59,74 @@ JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
 `ui`라는 하나의 폴더에 모든 화면을 넣지 않는 것이 이 템플릿의 중요한
 원칙입니다. 화면이 늘어나면 기능별 패키지로 분리해야 나중에 수정하기 쉽습니다.
 
+## 중요한 파일부터 이해하기
+
+처음에는 모든 Kotlin 파일을 읽기보다 아래 파일을 순서대로 확인하면 됩니다.
+
+| 파일 또는 폴더 | 역할 | 초보자에게 중요한 이유 |
+| --- | --- | --- |
+| `AGENTS.md` | 템플릿 유지·검증 규칙 | Compose, 다국어, 설정 구조를 지키는 기준입니다. |
+| `DESIGN.md` | 화면 디자인 규칙 | 색상·폰트·간격·컴포넌트를 통일합니다. |
+| `settings.gradle.kts` | Gradle 프로젝트 이름과 모듈 | Android 프로젝트의 시작 설정입니다. |
+| `MainActivity.kt` | Android 화면 진입점 | Compose 앱을 시작하는 Activity입니다. |
+| `AppTemplateAndroidApplication.kt` | 앱 전역 초기화 | AdMob·Mixpanel 같은 공통 SDK 시작 위치입니다. |
+| `core/config/AppConfig.kt` | 공개 앱 설정 | 앱 이름, 색상, URL, 상품 ID를 바꿉니다. |
+| `core/ui/theme/Theme.kt` | 공통 디자인 토큰 | 색상·폰트·다크 모드를 관리합니다. |
+| `core/ui/components/Components.kt` | 공통 Compose UI | 카드·버튼·입력창·광고 UI를 재사용합니다. |
+| `data/settings/` | 설정과 온보딩 저장 | Preferences DataStore를 통해 상태를 보존합니다. |
+| `data/premium/PremiumStore.kt` | Play Billing 상태 | 상품 조회·구매·복원을 담당합니다. |
+| `features/home/` | 홈 화면 | 제품의 첫 화면을 수정할 때 시작합니다. |
+| `features/settings/` | 설정 화면 | 언어·테마·프리미엄·링크 메뉴를 관리합니다. |
+| `features/onboarding/` | 온보딩 화면 | 첫 실행 소개와 권한 안내를 관리합니다. |
+| `features/premium/` | 페이월 화면 | 프리미엄 상품 선택과 구매 UI입니다. |
+| `res/values*/strings.xml` | 다국어 문구 | Kotlin 코드에 문장을 직접 쓰지 않게 합니다. |
+
+### 앱을 바꿀 때의 기본 순서
+
+1. `core/config/AppConfig.kt`에서 앱 이름, 색상, URL, 상품 ID를 바꿉니다.
+2. `app/build.gradle.kts`에서 Application ID와 버전을 확인합니다.
+3. `features/home/HomeScreen.kt`에서 홈 화면을 제품에 맞게 수정합니다.
+4. 설정 메뉴는 `features/settings/SettingsScreen.kt`에서 수정합니다.
+5. 새 기능은 `features/<Feature>` 패키지로 추가합니다.
+6. 문구는 `res/values*/strings.xml`의 모든 기본 로케일에 추가합니다.
+7. Android Studio에서 Sync 후 단위 테스트와 Debug 빌드를 실행합니다.
+
+### Android 키 값 관리
+
+`local.properties.example`에는 SDK 경로와 필요한 키의 이름만 예시로 들어
+있습니다. 다음처럼 복사한 뒤 본인 컴퓨터의 SDK 경로와 앱별 키를 입력합니다.
+
+```sh
+cp local.properties.example local.properties
+```
+
+`local.properties`에 들어가는 값은 다음과 같습니다.
+
+- `sdk.dir`: 본인 컴퓨터의 Android SDK 경로
+- `ADMOB_APP_ID`, `ADMOB_BANNER_ID`, `ADMOB_NATIVE_ID`, `ADMOB_REWARD_ID`
+- `ADMOB_TEST_DEVICE`
+- `MIXPANEL_TOKEN`
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_REDIRECT_URL`
+
+`local.properties`는 `.gitignore`에 등록되어 있어 Git에 올리지 않습니다.
+앱 이름, 브랜드 색상, 외부 URL, Play Billing 상품 ID는
+`core/config/AppConfig.kt`에서 앱별로 변경합니다. 다른 앱의 키를 복사하지
+말고 각 서비스에서 앱별 값을 발급받아 사용하세요.
+
+### 외부 기능이 연결되는 위치
+
+- 광고: `core/admob/AdMobManager.kt`와 광고 Compose 컴포넌트
+- 개인정보 동의: AdMob 광고 요청 전에 UMP 동의 상태를 확인합니다.
+- 분석: `core/analytics/MixpanelManager.kt`
+- 결제: `data/premium/PremiumStore.kt`와
+  `features/premium/PremiumPaywallDialog.kt`
+- 리뷰: `core/review/InAppReviewManager.kt`
+- 알림 권한: `data/settings/NotificationPermissionManager.kt`
+
+placeholder 상태에서는 광고·분석·결제·Supabase가 실제로 연결되지 않는 것이
+정상입니다. 화면과 기본 흐름을 먼저 완성하고, 출시 준비 단계에서 실제 키와
+스토어 상품을 연결하세요.
+
 ## 포함된 기본 구성
 
 - 홈 / 설정 하단 탭
