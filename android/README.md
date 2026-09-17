@@ -3,6 +3,62 @@
 Boogios 네이티브 Android 스타터 템플릿입니다. iOS `AppTemplate`의 기본
 구조를 Jetpack Compose와 Kotlin으로 대응시켰습니다.
 
+## 처음 시작하는 분들을 위한 안내
+
+이 폴더는 Android 앱을 만들기 위한 템플릿입니다. 화면은 Kotlin과 Jetpack
+Compose로 작성하고, 설정값은 `local.properties`에 저장합니다. 완성된 하나의
+서비스가 아니라 새로운 앱을 시작하는 기본 프로젝트이므로, 먼저 예제 앱을
+실행해 본 뒤 제품 기능을 추가하세요.
+
+### 준비물
+
+- Android Studio
+- Android SDK와 Android 12 이상 에뮬레이터 또는 테스트 기기
+- JDK: Android Studio에 포함된 JBR 사용 권장
+- 인터넷 연결: Gradle 의존성을 처음 내려받을 때 필요
+
+### 5분 안에 실행하기
+
+Android Studio에서 저장소의 `android` 폴더를 엽니다. 터미널을 사용하는 경우:
+
+```sh
+cd android
+cp local.properties.example local.properties
+```
+
+`local.properties`를 열어 `sdk.dir`을 본인 컴퓨터의 Android SDK 경로로
+바꿉니다. Android Studio에서 에뮬레이터를 실행하고 Run 버튼을 누르거나,
+다음 명령으로 APK를 빌드합니다.
+
+```sh
+JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
+  ./gradlew :app:assembleDebug --console=plain
+```
+
+빌드가 끝나면 Android Studio에서 Run을 눌러 앱을 설치할 수 있습니다.
+예제 키는 placeholder이므로 광고·분석·결제는 연결되지 않지만, 홈·설정·
+온보딩 화면은 정상적으로 확인할 수 있습니다.
+
+### 처음 수정할 파일 순서
+
+1. `core/config/AppConfig.kt`에서 앱 이름, 색상, URL, 상품 ID를 확인합니다.
+2. `features/home/HomeScreen.kt`에서 기본 홈 화면을 제품에 맞게 바꿉니다.
+3. `features/settings/SettingsScreen.kt`에서 설정 메뉴와 이동을 확인합니다.
+4. 새 문구는 `app/src/main/res/values*/strings.xml`에 추가합니다.
+5. 색상·간격·폰트는 `core/ui/theme/Theme.kt`와 `DESIGN.md`를 확인합니다.
+6. 새 기능은 `features/<Feature>` 패키지로 분리합니다.
+
+### Android Studio에서 자주 보는 폴더
+
+- `core`: 여러 화면이 함께 사용하는 기반 코드
+- `data`: 설정 저장, 온보딩 상태, 결제 상태
+- `features`: 실제 제품 화면
+- `navigation`: 온보딩·홈·설정·페이월 연결
+- `res/values*`: 언어별 화면 문구와 테마 리소스
+
+`ui`라는 하나의 폴더에 모든 화면을 넣지 않는 것이 이 템플릿의 중요한
+원칙입니다. 화면이 늘어나면 기능별 패키지로 분리해야 나중에 수정하기 쉽습니다.
+
 ## 포함된 기본 구성
 
 - 홈 / 설정 하단 탭

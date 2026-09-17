@@ -2,6 +2,54 @@
 
 Boogios-style SwiftUI starter app for the Boogios workspace.
 
+## 처음 시작하는 분들을 위한 안내
+
+이 폴더는 iPhone 앱을 만들기 위한 iOS 템플릿입니다. SwiftUI로 화면을 만들고,
+XcodeGen으로 Xcode 프로젝트를 관리합니다. 완성된 제품이 아니라 새로운 앱의
+출발점이므로, 먼저 템플릿을 그대로 실행한 다음 필요한 화면을 하나씩 바꾸는
+방식으로 사용하는 것을 권장합니다.
+
+### 준비물
+
+- macOS
+- Xcode 16 이상 권장
+- iOS Simulator 또는 테스트용 iPhone
+- XcodeGen: `brew install xcodegen`
+- 선택 사항: Fastlane, Node.js
+
+### 5분 안에 실행하기
+
+저장소 루트에서 다음을 실행합니다.
+
+```sh
+cd ios
+cp Configs/AppSecrets.xcconfig.example Configs/AppSecrets.xcconfig
+xcodegen generate
+open AppTemplate.xcodeproj
+```
+
+Xcode가 열리면 상단에서 `AppTemplate` 스킴과 iPhone Simulator를 선택하고
+실행 버튼을 누릅니다. 예제 키는 placeholder이므로 광고·분석·결제는 연결되지
+않지만, 홈·설정·온보딩 화면은 확인할 수 있습니다.
+
+`AppSecrets.xcconfig`는 로컬에서만 사용하는 파일입니다. 실제 키가 없어도
+템플릿을 이해하고 화면을 개발할 수 있으며, 이 파일은 Git에 커밋하지 않습니다.
+
+### 처음 수정할 파일 순서
+
+1. `AppTemplate/Global/Config.swift`에서 앱 이름, 브랜드 색상, URL, 상품 ID를
+   확인합니다.
+2. `AppTemplate/View/Home/HomeView.swift`에서 기본 홈 화면을 제품에 맞게
+   바꿉니다.
+3. `AppTemplate/View/MyPage/MyPageView.swift`에서 설정 화면을 확인합니다.
+4. 새 문구는 `Global/Localization/`의 적절한 `*L10n.swift`에 추가합니다.
+5. 화면 스타일은 `DESIGN.md`를 확인한 뒤 기존 컴포넌트와 토큰을 사용합니다.
+6. 화면이 커지면 `Features/<Feature>/`로 기능을 분리합니다.
+
+`project.yml`은 Xcode 프로젝트의 원본입니다. Xcode 프로젝트 파일을 직접
+고치기보다 `project.yml`을 수정한 뒤 `xcodegen generate`를 실행해야 다음에
+프로젝트를 다시 만들어도 변경사항이 유지됩니다.
+
 ## Create A New App
 
 From the workspace root:

@@ -5,6 +5,100 @@ Boogios 스타일의 네이티브 iOS·Android 앱을 빠르게 시작하기 위
 프리미엄·광고·분석·다국어·리뷰 요청의 기본 제품 경험은 최대한 대응되도록
 구성되어 있습니다.
 
+## 이 저장소를 처음 보는 분께
+
+이 저장소는 완성된 하나의 앱이 아니라, 새로운 앱을 만들 때 반복해서 쓰는
+출발점입니다. 이미 홈 화면, 설정 화면, 온보딩, 다국어, 구독 화면, 광고와
+분석 SDK 연결 자리, 테스트 구조가 들어 있습니다. 따라서 새 앱을 만들 때마다
+로그인·테마·설정·권한 화면을 처음부터 다시 만들 필요가 없습니다.
+
+다만 이 템플릿만 복사한다고 바로 출시할 수 있는 것은 아닙니다. 앱 이름,
+아이콘, Bundle ID 또는 Application ID, 개인정보 처리방침 URL, 광고·분석 키,
+스토어 상품 ID처럼 앱마다 달라지는 값을 먼저 바꿔야 합니다. 실제 서비스
+기능과 스토어 심사 정보도 제품별로 추가해야 합니다.
+
+### 먼저 알아두면 좋은 단어
+
+| 단어 | 쉬운 설명 |
+| --- | --- |
+| 템플릿 | 새 앱을 시작할 때 복사해서 쓰는 기본 프로젝트 |
+| Bundle ID | iOS에서 앱을 구별하는 고유 주소 |
+| Application ID | Android에서 앱을 구별하는 고유 주소 |
+| XcodeGen | iOS 설정 파일로 Xcode 프로젝트를 다시 만드는 도구 |
+| Compose | Android 화면을 Kotlin 코드로 작성하는 UI 방식 |
+| placeholder | 아직 실제 값을 넣지 않은 예시 값 |
+| StoreKit / Play Billing | 각각 Apple·Google의 결제 기능 |
+| UMP | 광고를 보여주기 전 개인정보 동의를 처리하는 Google 도구 |
+| smoke test | 앱의 가장 중요한 화면 이동이 작동하는지 빠르게 확인하는 테스트 |
+
+## 초보자용 시작 순서
+
+1. 아래의 `ios` 또는 `android` 중 만들 플랫폼 하나를 선택합니다.
+2. 해당 폴더의 README를 처음부터 읽습니다.
+3. 예제 설정 파일을 복사하고 앱별 기본 정보를 입력합니다.
+4. 앱을 먼저 빌드해서 템플릿이 정상 실행되는지 확인합니다.
+5. 홈 화면이나 기능을 바꾸기 전에 설정·온보딩·다국어 구조를 유지합니다.
+
+처음부터 광고, 결제, 로그인 키를 넣을 필요는 없습니다. placeholder 상태로
+앱을 실행한 뒤 화면 구조를 이해하고, 실제 서비스 준비가 끝났을 때 키를
+추가하는 것이 안전합니다.
+
+## 가장 쉬운 확인 방법
+
+### iOS만 확인하기
+
+```sh
+git clone https://github.com/boogios/AppTemplate.git
+cd AppTemplate/ios
+cp Configs/AppSecrets.xcconfig.example Configs/AppSecrets.xcconfig
+xcodegen generate
+open AppTemplate.xcodeproj
+```
+
+Xcode가 열리면 `AppTemplate` 스킴과 iPhone Simulator를 선택한 뒤 실행 버튼을
+누릅니다. 처음 실행하면 온보딩이 나오고, 닉네임을 입력하면 홈 화면으로
+이동합니다.
+
+### Android만 확인하기
+
+```sh
+cd AppTemplate/android
+cp local.properties.example local.properties
+```
+
+그다음 `local.properties`의 `sdk.dir`을 본인 컴퓨터의 Android SDK 위치로
+바꾸고 Android Studio에서 `android` 폴더를 엽니다. 에뮬레이터를 실행한 뒤
+Run 버튼을 누르거나 다음 명령을 사용합니다.
+
+```sh
+./gradlew :app:assembleDebug --console=plain
+```
+
+## 새 앱을 만들 때의 추천 순서
+
+앱 이름과 식별자를 정한 뒤 저장소 루트에서 생성기를 실행합니다.
+
+```sh
+./scripts/new-ios-app.sh MyNewApp com.example.mynewapp "My New App" Utilities
+./scripts/new-android-app.sh MyNewApp com.example.mynewapp "My New App"
+```
+
+생성된 앱은 기본적으로 이 저장소의 형제 폴더에 만들어집니다. 다른 위치에
+만들고 싶으면 `BOOGIOS_WORKSPACE_DIR` 환경 변수를 지정할 수 있습니다. iOS
+생성에는 XcodeGen이 필요하고, Android 생성에는 Android SDK와 JDK가 필요합니다.
+
+## 문제가 생겼을 때 먼저 확인할 것
+
+- `SDK location not found`: Android `local.properties`의 `sdk.dir` 확인
+- iOS `base configuration` 오류: `Configs/AppSecrets.xcconfig` 생성 여부 확인
+- 광고가 안 보임: 정상일 수 있습니다. 실제 AdMob ID와 UMP 동의가 필요합니다.
+- 결제 상품이 안 보임: App Store Connect 또는 Play Console 상품 등록 전에는
+  준비 중 화면이 표시됩니다.
+- 화면 문구가 이상함: 코드가 아니라 해당 플랫폼의 `strings.xml` 또는
+  `*L10n.swift`를 수정해야 합니다.
+- Xcode 프로젝트가 오래된 것 같음: iOS `project.yml` 수정 후
+  `xcodegen generate`를 다시 실행합니다.
+
 ## 저장소 구조
 
 ```text
