@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Store Screenshot Template</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: #e9ecf2; }
+      body { padding: 48px; }
+      .deck { display: grid; gap: 48px; justify-content: center; }
+      .board {
+        width: var(--board-width);
+        height: var(--board-height);
+        overflow: hidden;
+        background: radial-gradient(circle at 84% 10%, var(--accent-soft), transparent 30%), var(--theme-background);
+      }
+      .board-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: var(--padding-top) var(--padding-x) 96px;
+        gap: var(--copy-gap);
+        text-align: center;
+      }
+      .copy {
+        width: 100%;
+        min-width: 0;
+      }
+      .title, .body {
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: clip;
+      }
+      .title {
+        color: var(--title-color);
+        font-size: var(--title-size);
+        font-weight: var(--title-weight);
+        line-height: 1.08;
+        letter-spacing: var(--title-tracking);
+      }
+      .body {
+        color: var(--body-color);
+        font-size: var(--body-size);
+        font-weight: var(--body-weight);
+        line-height: 1.28;
+        letter-spacing: var(--body-tracking);
+      }
+      .image-wrap {
+        display: flex;
+        flex: 0 0 auto;
+        width: 100%;
+        min-height: 0;
+        align-items: center;
+        justify-content: center;
+        padding-top: var(--image-gap);
+      }
+      .screen-image {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        border-radius: var(--image-radius);
+        overflow: hidden;
+        clip-path: inset(0 round var(--image-radius));
+        box-shadow: none;
+        background: transparent;
+      }
+      .screen-image-frame {
+        width: var(--image-width);
+        height: var(--image-height);
+        overflow: hidden;
+        border-radius: var(--image-radius);
+        clip-path: inset(0 round var(--image-radius));
+        background: transparent;
+      }
+      .draft-badge {
+        position: absolute;
+        top: 22px;
+        right: 24px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: #7c4d00;
+        background: #fff2cf;
+        font: 600 18px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .board[data-draft="false"] .draft-badge { display: none; }
+    </style>
+  </head>
+  <body>
+    <main class="deck" id="deck"></main>
+    <script>window.SCREENSHOT_DATA = __SCREENSHOT_DATA__;</script>
+    <script>
+      const { config, locale, deviceKey, cards, fontManifest } = window.SCREENSHOT_DATA;
+      const device = config.devices[deviceKey];
+      const theme = config.theme;
+      const typography = config.typography;
+      const alias = fontManifest.aliases[locale] || locale;
+      const preset = fontManifest.presets[alias];
+      const root = document.documentElement;
+
+      document.documentElement.lang = locale;
+      document.documentElement.dir = preset.direction;
+      const stylesheetLoads = fontManifest.stylesheets.map((href) => new Promise((resolve, reject) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = href;
+        link.onload = resolve;
+        link.onerror = () => reject(new Error(`Unable to load font stylesheet: ${href}`));
+        document.head.appendChild(link);
+      }));
+      const set = (name, value) => root.style.setProperty(name, value);
+      set("--board-width", `${device.boardWidth}px`);
+      set("--board-height", `${device.boardHeight}px`);
+      set("--padding-x", `${device.paddingX}px`);
+      set("--padding-top", `${device.paddingTop}px`);
+      set("--copy-gap", `${device.copyGap || 24}px`);
+      set("--image-gap", `${device.imageGap || 42}px`);
+      set("--title-size", `${device.titleSize}px`);
+      set("--body-size", `${device.bodySize}px`);
+      set("--image-width", `${device.imageWidth}px`);
+      set("--image-height", `${device.imageHeight}px`);
+      set("--image-radius", `${theme.imageRadius}px`);
+      set("--theme-background", theme.background);
+      set("--title-color", theme.title);
+      set("--body-color", theme.body);
+      set("--accent-soft", `${theme.accent}22`);
+      set("--title-weight", preset.titleWeight);
+      set("--body-weight", preset.bodyWeight);
+      set("--title-tracking", typography.tracking?.[alias]?.title || "-0.02em");
+      set("--body-tracking", typography.tracking?.[alias]?.body || "0");
+
+      const deck = document.getElementById("deck");
+      cards.forEach((card) => {
+        const board = document.createElement("section");
+        board.className = "board";
+        board.dataset.slug = card.slug;
+        board.dataset.draft = String(card.draft);
+        board.dir = preset.direction;
+        const inner = document.createElement("div");
+        inner.className = "board-inner";
+        const title = document.createElement("h1");
+        title.className = "title copy";
+        title.textContent = card.title;
+        title.style.fontFamily = preset.family;
+        const body = document.createElement("p");
+        body.className = "body copy";
+        body.textContent = card.body;
+        body.style.fontFamily = preset.family;
+        const wrap = document.createElement("div");
+        wrap.className = "image-wrap";
+        const image = document.createElement("img");
+        image.className = "screen-image";
+        image.src = card.image;
+        image.alt = card.alt;
+        const imageFrame = document.createElement("div");
+        imageFrame.className = "screen-image-frame";
+        const badge = document.createElement("span");
+        badge.className = "draft-badge";
+        badge.textContent = "DRAFT LOCALIZATION";
+        imageFrame.appendChild(image);
+        wrap.appendChild(imageFrame);
+        inner.append(title, body, wrap, badge);
+        board.appendChild(inner);
+        deck.appendChild(board);
+      });
+
+      function fitText(element, minSize) {
+        const baseSize = Number.parseFloat(getComputedStyle(element).fontSize);
+        let size = baseSize;
+        const availableWidth = () => Math.max(0, element.clientWidth - 16);
+        const textWidth = () => {
+          const style = getComputedStyle(element);
+          const context = document.createElement("canvas").getContext("2d");
+          context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+          const tracking = Number.parseFloat(style.letterSpacing) || 0;
+          return context.measureText(element.textContent).width + Math.max(0, element.textContent.length - 1) * tracking;
+        };
+        while (textWidth() > availableWidth() && size > minSize) {
+          size -= 1;
+          element.style.fontSize = `${size}px`;
+        }
+        if (textWidth() > availableWidth()) element.dataset.fitFailed = "true";
+        return { text: element.textContent, baseSize, size, width: textWidth(), fits: textWidth() <= availableWidth() };
+      }
+
+      async function prepare() {
+        await Promise.all(stylesheetLoads);
+        const families = preset.family.split(",").map((family) => family.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
+        await Promise.all(families.flatMap((family) => [preset.titleWeight, preset.bodyWeight].map((weight) => document.fonts.load(`${weight} 80px "${family}"`, preset.probe || "Global").catch(() => []))));
+        await document.fonts.ready;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const checks = [];
+        document.querySelectorAll(".board").forEach((board) => {
+          checks.push({
+            slug: board.dataset.slug,
+            title: fitText(board.querySelector(".title"), typography.minimums.title),
+            body: fitText(board.querySelector(".body"), typography.minimums.body)
+          });
+        });
+        window.__SCREENSHOT_READY__ = true;
+        window.__SCREENSHOT_LAYOUT__ = checks;
+      }
+      prepare();
+    </script>
+  </body>
+</html>

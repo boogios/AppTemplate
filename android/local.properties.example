@@ -1,0 +1,12 @@
+## Copy this file to local.properties. Keep the real file out of Git.
+sdk.dir=/path/to/your/Android/sdk
+
+ADMOB_APP_ID=ca-app-pub-0000000000000000~0000000000
+ADMOB_BANNER_ID=ca-app-pub-0000000000000000/0000000000
+ADMOB_NATIVE_ID=ca-app-pub-0000000000000000/0000000000
+ADMOB_REWARD_ID=ca-app-pub-0000000000000000/0000000000
+ADMOB_TEST_DEVICE=
+MIXPANEL_TOKEN=
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_REDIRECT_URL=com.example.app://auth-callback

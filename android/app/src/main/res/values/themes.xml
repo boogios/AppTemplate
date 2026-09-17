@@ -1,0 +1,11 @@
+<resources>
+    <style name="Theme.AppTemplateAndroid" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="android:colorAccent">@color/brand_main</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/splash_background</item>
+        <item name="android:navigationBarColor">@color/splash_background</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>

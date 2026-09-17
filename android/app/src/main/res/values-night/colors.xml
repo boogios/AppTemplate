@@ -1,0 +1,11 @@
+<resources>
+    <color name="brand_main">#475CEF</color>
+    <color name="brand_main_soft">#2E3C9B</color>
+    <color name="brand_main_softer">#202B6B</color>
+    <color name="surface_default">#1C1C1E</color>
+    <color name="gray2">#2C2C2E</color>
+    <color name="gray5">#636366</color>
+    <color name="gray6">#8E8E93</color>
+    <color name="gray10">#FFFFFF</color>
+    <color name="splash_background">#000000</color>
+</resources>

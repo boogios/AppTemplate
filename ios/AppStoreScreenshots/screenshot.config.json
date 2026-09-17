@@ -1,0 +1,220 @@
+{
+  "appName": "AppTemplate",
+  "locales": [
+    "ko",
+    "en-US",
+    "ja",
+    "zh-Hans",
+    "zh-Hant",
+    "zh-Hant-HK",
+    "th",
+    "vi",
+    "ar",
+    "hi",
+    "es-MX",
+    "pt-BR",
+    "fr-FR",
+    "de-DE",
+    "en-GB",
+    "en-CA",
+    "en-AU"
+  ],
+  "exportDevices": [
+    "iphone69",
+    "ipad13"
+  ],
+  "theme": {
+    "background": "#EAF0F8",
+    "surface": "#FFFFFF",
+    "title": "#0B0D12",
+    "body": "#6C7280",
+    "accent": "#475CEF",
+    "imageRadius": 48
+  },
+  "devices": {
+    "iphone69": {
+      "label": "iPhone 6.9",
+      "boardWidth": 1290,
+      "boardHeight": 2796,
+      "paddingX": 92,
+      "paddingTop": 128,
+      "titleSize": 86,
+      "bodySize": 40,
+      "imageWidth": 902,
+      "imageHeight": 1960,
+      "captureDir": "iphone69",
+      "copyGap": 24,
+      "imageGap": 42
+    },
+    "ipad13": {
+      "label": "iPad 13",
+      "boardWidth": 2048,
+      "boardHeight": 2732,
+      "paddingX": 150,
+      "paddingTop": 126,
+      "titleSize": 118,
+      "bodySize": 54,
+      "imageWidth": 1748,
+      "imageHeight": 1840,
+      "captureDir": "ipad13",
+      "copyGap": 30,
+      "imageGap": 48
+    }
+  },
+  "cards": [
+    {
+      "slug": "home",
+      "capture": "home",
+      "title": {
+        "en-US": "See the main flow at a glance",
+        "en-GB": "See the main flow at a glance",
+        "en-CA": "See the main flow at a glance",
+        "en-AU": "See the main flow at a glance",
+        "ko": "핵심 화면을 한눈에",
+        "ja": "メイン画面をひと目で",
+        "de-DE": "Alles Wichtige auf einen Blick",
+        "fr-FR": "Le parcours principal en un coup d'oeil",
+        "pt-BR": "Veja o fluxo principal rapidamente",
+        "vi": "Xem luồng chính trong nháy mắt",
+        "zh-Hans": "See the main flow at a glance",
+        "zh-Hant": "See the main flow at a glance",
+        "zh-Hant-HK": "See the main flow at a glance",
+        "th": "See the main flow at a glance",
+        "ar": "See the main flow at a glance",
+        "hi": "See the main flow at a glance",
+        "es-MX": "See the main flow at a glance"
+      },
+      "body": {
+        "en-US": "Show your app's most important feature clearly.",
+        "en-GB": "Show your app's most important feature clearly.",
+        "en-CA": "Show your app's most important feature clearly.",
+        "en-AU": "Show your app's most important feature clearly.",
+        "ko": "앱의 가장 중요한 기능을 깔끔하게 보여주세요.",
+        "ja": "アプリの大切な機能をすっきり見せましょう。",
+        "de-DE": "Zeige die wichtigste Funktion deiner App klar und einfach.",
+        "fr-FR": "Mettez clairement en avant la fonction essentielle.",
+        "pt-BR": "Mostre o recurso mais importante do app com clareza.",
+        "vi": "Hiển thị rõ ràng tính năng quan trọng nhất của ứng dụng.",
+        "zh-Hans": "Show your app's most important feature clearly.",
+        "zh-Hant": "Show your app's most important feature clearly.",
+        "zh-Hant-HK": "Show your app's most important feature clearly.",
+        "th": "Show your app's most important feature clearly.",
+        "ar": "Show your app's most important feature clearly.",
+        "hi": "Show your app's most important feature clearly.",
+        "es-MX": "Show your app's most important feature clearly."
+      }
+    },
+    {
+      "slug": "settings",
+      "capture": "settings",
+      "title": {
+        "en-US": "Settings that feel ready",
+        "en-GB": "Settings that feel ready",
+        "en-CA": "Settings that feel ready",
+        "en-AU": "Settings that feel ready",
+        "ko": "설정까지 자연스럽게",
+        "ja": "設定まで自然に",
+        "de-DE": "Einstellungen, die bereit wirken",
+        "fr-FR": "Des réglages prêts à l'emploi",
+        "pt-BR": "Ajustes prontos para usar",
+        "vi": "Cài đặt sẵn sàng để dùng",
+        "zh-Hans": "Settings that feel ready",
+        "zh-Hant": "Settings that feel ready",
+        "zh-Hant-HK": "Settings that feel ready",
+        "th": "Settings that feel ready",
+        "ar": "Settings that feel ready",
+        "hi": "Settings that feel ready",
+        "es-MX": "Settings that feel ready"
+      },
+      "body": {
+        "en-US": "Highlight language, theme, support, and app details.",
+        "en-GB": "Highlight language, theme, support, and app details.",
+        "en-CA": "Highlight language, theme, support, and app details.",
+        "en-AU": "Highlight language, theme, support, and app details.",
+        "ko": "언어, 테마, 문의 화면까지 일관된 경험을 담으세요.",
+        "ja": "言語、テーマ、問い合わせまで一貫して伝えます。",
+        "de-DE": "Zeige Sprache, Design, Support und App-Details einheitlich.",
+        "fr-FR": "Présentez langue, thème, support et détails de l'app.",
+        "pt-BR": "Mostre idioma, tema, suporte e detalhes do app.",
+        "vi": "Làm nổi bật ngôn ngữ, giao diện, hỗ trợ và thông tin app.",
+        "zh-Hans": "Highlight language, theme, support, and app details.",
+        "zh-Hant": "Highlight language, theme, support, and app details.",
+        "zh-Hant-HK": "Highlight language, theme, support, and app details.",
+        "th": "Highlight language, theme, support, and app details.",
+        "ar": "Highlight language, theme, support, and app details.",
+        "hi": "Highlight language, theme, support, and app details.",
+        "es-MX": "Highlight language, theme, support, and app details."
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "localizationStatus": {
+    "en-US": "ready",
+    "en-GB": "ready",
+    "en-CA": "ready",
+    "en-AU": "ready",
+    "ko": "ready",
+    "ja": "ready",
+    "de-DE": "ready",
+    "fr-FR": "ready",
+    "pt-BR": "ready",
+    "vi": "ready",
+    "zh-Hans": "draft",
+    "zh-Hant": "draft",
+    "zh-Hant-HK": "draft",
+    "th": "draft",
+    "ar": "draft",
+    "hi": "draft",
+    "es-MX": "draft"
+  },
+  "localizationSource": {
+    "zh-Hans": "en-US",
+    "zh-Hant": "en-US",
+    "zh-Hant-HK": "en-US",
+    "th": "en-US",
+    "ar": "en-US",
+    "hi": "en-US",
+    "es-MX": "en-US"
+  },
+  "typography": {
+    "fontManifest": "font-manifest.json",
+    "minimums": {
+      "title": 64,
+      "body": 32
+    },
+    "tracking": {
+      "en-US": {
+        "title": "-0.02em",
+        "body": "0"
+      },
+      "ja": {
+        "title": "0",
+        "body": "0"
+      },
+      "zh-Hans": {
+        "title": "0",
+        "body": "0"
+      },
+      "zh-Hant": {
+        "title": "0",
+        "body": "0"
+      },
+      "zh-Hant-HK": {
+        "title": "0",
+        "body": "0"
+      },
+      "th": {
+        "title": "0",
+        "body": "0"
+      },
+      "ar": {
+        "title": "0",
+        "body": "0"
+      },
+      "hi": {
+        "title": "0",
+        "body": "0"
+      }
+    }
+  }
+}

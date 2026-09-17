@@ -1,0 +1,32 @@
+fastlane_version "2.228.0"
+
+default_platform(:android)
+
+ANDROID_ROOT = File.expand_path("..", __dir__)
+PACKAGE_NAME = ENV.fetch("ANDROID_PACKAGE_NAME", "com.boogios.template")
+
+platform :android do
+  desc "Build a debug-independent Android App Bundle"
+  lane :build_release do
+    gradle(
+      project_dir: ANDROID_ROOT,
+      task: "bundle",
+      build_type: "Release"
+    )
+  end
+
+  desc "Upload a prepared bundle to a Play Console track"
+  lane :upload do
+    required = %w[SUPPLY_JSON_KEY_PATH ANDROID_PACKAGE_NAME]
+    missing = required.select { |key| ENV[key].to_s.strip.empty? }
+    UI.user_error!("Missing release inputs: #{missing.join(', ')}") unless missing.empty?
+    build_release
+    upload_to_play_store(
+      package_name: PACKAGE_NAME,
+      json_key: ENV.fetch("SUPPLY_JSON_KEY_PATH"),
+      aab: File.join(ANDROID_ROOT, "app", "build", "outputs", "bundle", "release", "app-release.aab"),
+      track: ENV.fetch("ANDROID_TRACK", "internal"),
+      release_status: "draft"
+    )
+  end
+end

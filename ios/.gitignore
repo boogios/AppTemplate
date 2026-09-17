@@ -1,0 +1,30 @@
+.DS_Store
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+DerivedData/
+.build/
+build/
+
+# Bundler
+.bundle/
+vendor/bundle/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Fastlane local secrets and outputs
+fastlane/.env
+fastlane/*.p8
+fastlane/screenshots/
+fastlane/report.xml
+artifacts/
+outputs/
+
+# App-local credentials and signing assets
+Configs/AppSecrets.xcconfig
+*.p12
+*.mobileprovision

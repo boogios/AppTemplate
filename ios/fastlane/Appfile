@@ -1,0 +1,4 @@
+app_identifier("com.boogios.template")
+apple_id("your-apple-id@example.com")
+
+team_id("MAZQ6JDBT4")
