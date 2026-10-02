@@ -1,0 +1,4 @@
+interface:
+  display_name: "iOS Fastlane Release"
+  short_description: "Release iOS apps with fastlane."
+  default_prompt: "Use this skill when preparing, uploading, or submitting an iOS app release with fastlane."

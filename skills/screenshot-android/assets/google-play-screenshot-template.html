@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Play Screenshot Template</title>
+    <style>
+      :root {
+        --page-bg: #dce5eb;
+        --board-bg: #e7edf2;
+        --title: #101418;
+        --body: #5d6872;
+        --accent: #2f6df6;
+        --radius: 36px;
+        --image-radius: 42px;
+        --content-gap: 50px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 48px;
+        background: var(--page-bg);
+        color: var(--title);
+        font-family: "Inter", "SF Pro Display", "Noto Sans", sans-serif;
+      }
+
+      .deck {
+        display: grid;
+        gap: 48px;
+        justify-content: center;
+      }
+
+      .board {
+        width: var(--board-width);
+        height: var(--board-height);
+        overflow: hidden;
+        background: var(--board-bg);
+        border-radius: var(--radius);
+      }
+
+      .board-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 0 var(--copy-padding-x);
+        gap: var(--content-gap);
+      }
+
+      .copy {
+        display: grid;
+        justify-items: center;
+        gap: var(--copy-gap);
+        width: 100%;
+        text-align: center;
+      }
+
+      .title {
+        margin: 0;
+        font-size: var(--title-size);
+        line-height: 1.06;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        text-align: center;
+      }
+
+      .body {
+        margin: 0;
+        color: var(--body);
+        font-size: var(--body-size);
+        line-height: 1.28;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      .image-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 0;
+        background: transparent;
+        border-radius: var(--image-radius);
+        overflow: hidden;
+      }
+
+      .image {
+        display: block;
+        width: auto;
+        height: var(--image-height);
+        max-width: var(--image-width);
+        max-height: var(--image-height);
+        border-radius: var(--image-radius);
+        object-fit: var(--image-fit, contain);
+        object-position: var(--image-position, center);
+        clip-path: inset(0 round var(--image-radius));
+      }
+
+      /* Edge-to-edge mode removes side whitespace without stretching the capture. */
+      .image-wrap.edge-to-edge .image {
+        width: 100%;
+        max-width: none;
+        height: var(--image-height);
+        object-fit: cover;
+      }
+
+      @media (max-width: 1100px) {
+        body {
+          padding: 20px;
+        }
+
+        .deck {
+          transform-origin: top center;
+          transform: scale(0.7);
+          margin-bottom: -30%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck" id="deck"></main>
+
+    <script>
+      const devices = {
+        phone: {
+          boardWidth: 1080,
+          boardHeight: 1920,
+          copyPaddingX: 84,
+          copyPaddingTop: 104,
+          copyPaddingBottom: 74,
+          copyGap: 24,
+          titleSize: 78,
+          bodySize: 38,
+          imageWidth: 860,
+          imageHeight: 1260,
+          imageFit: "contain",
+          imagePosition: "center",
+          imageRadius: 34,
+          imageTopGap: 36,
+          captureDir: "./captures/phone"
+        },
+        sevenInch: {
+          boardWidth: 1440,
+          boardHeight: 2560,
+          copyPaddingX: 112,
+          copyPaddingTop: 126,
+          copyPaddingBottom: 96,
+          copyGap: 30,
+          titleSize: 104,
+          bodySize: 50,
+          imageWidth: 1150,
+          imageHeight: 1740,
+          imageFit: "contain",
+          imagePosition: "center",
+          imageRadius: 42,
+          imageTopGap: 54,
+          captureDir: "./captures/seven-inch"
+        },
+        tenInchLandscape: {
+          boardWidth: 1920,
+          boardHeight: 1080,
+          copyPaddingX: 112,
+          copyPaddingTop: 104,
+          copyPaddingBottom: 76,
+          copyGap: 24,
+          titleSize: 76,
+          bodySize: 38,
+          imageWidth: 1010,
+          imageHeight: 760,
+          imageFit: "contain",
+          imagePosition: "center",
+          imageRadius: 34,
+          imageTopGap: 26,
+          captureDir: "./captures/ten-inch"
+        }
+      };
+
+      const selectedDevice = devices.phone;
+
+      const cards = [
+        {
+          slug: "hero",
+          title: "Plan your day at a glance",
+          body: "Replace this line with one short localized value proposition",
+          alt: "Android app home screen showing the day's plan"
+        },
+        {
+          slug: "plan",
+          title: "Keep the next step clear",
+          body: "Use the same structure for every screenshot in this device set",
+          alt: "Android app screen showing a focused task view"
+        }
+      ];
+
+      const root = document.documentElement;
+      const properties = {
+        "--board-width": `${selectedDevice.boardWidth}px`,
+        "--board-height": `${selectedDevice.boardHeight}px`,
+        "--copy-padding-x": `${selectedDevice.copyPaddingX}px`,
+        "--copy-padding-top": `${selectedDevice.copyPaddingTop}px`,
+        "--copy-padding-bottom": `${selectedDevice.copyPaddingBottom}px`,
+        "--copy-gap": `${selectedDevice.copyGap}px`,
+        "--title-size": `${selectedDevice.titleSize}px`,
+        "--body-size": `${selectedDevice.bodySize}px`,
+        "--image-width": `${selectedDevice.imageWidth}px`,
+        "--image-height": `${selectedDevice.imageHeight}px`,
+        "--image-fit": selectedDevice.imageFit,
+        "--image-position": selectedDevice.imagePosition,
+        "--image-radius": `${selectedDevice.imageRadius}px`,
+        "--image-top-gap": `${selectedDevice.imageTopGap}px`
+      };
+
+      Object.entries(properties).forEach(([name, value]) => {
+        root.style.setProperty(name, value);
+      });
+
+      const deck = document.getElementById("deck");
+
+      cards.forEach((card) => {
+        const board = document.createElement("section");
+        board.className = "board";
+        board.innerHTML = `
+          <div class="board-inner">
+            <div>
+              <h1 class="title">${card.title}</h1>
+            </div>
+            <p class="body">${card.body}</p>
+            <div class="image-wrap${selectedDevice.imageFit === "cover" ? " edge-to-edge" : ""}">
+              <img
+                class="image"
+                src="${selectedDevice.captureDir}/${card.slug}.png"
+                alt="${card.alt}"
+              />
+            </div>
+          </div>
+        `;
+        const copy = board.querySelector(".board-inner > div");
+        const body = board.querySelector(".body");
+        copy.classList.add("copy");
+        copy.appendChild(body);
+        deck.appendChild(board);
+      });
+    </script>
+  </body>
+</html>

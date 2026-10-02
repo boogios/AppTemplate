@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Store Screenshot Template</title>
+    <style>
+      :root {
+        --page-bg: #dfe7f1;
+        /* Keep the board surface independent from the app capture background. */
+        --board-bg: #edf2f7;
+        --title: #111111;
+        --body: #5b5b5b;
+        --shadow: 0 24px 60px rgba(17, 17, 17, 0.08);
+        --radius: 36px;
+        --image-radius: 28px;
+        --image-area-bg: transparent;
+        --content-gap: 50px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 48px;
+        background: var(--page-bg);
+        font-family: "Helvetica Neue", "Apple SD Gothic Neo", sans-serif;
+      }
+
+      .deck {
+        display: grid;
+        gap: 48px;
+        justify-content: center;
+      }
+
+      .board {
+        width: var(--board-width);
+        height: var(--board-height);
+        background: var(--board-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .board-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 0 var(--copy-padding-x);
+        gap: var(--content-gap);
+      }
+
+      .copy {
+        display: grid;
+        width: 100%;
+        gap: var(--copy-gap);
+      }
+
+      .title {
+        margin: 0;
+        color: var(--title);
+        font-size: var(--title-size);
+        line-height: 1.06;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .body {
+        margin: 0;
+        color: var(--body);
+        font-size: var(--body-size);
+        line-height: 1.28;
+        font-weight: 500;
+      }
+
+      .image-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        background: var(--image-area-bg);
+      }
+
+      .image {
+        width: var(--image-width);
+        height: auto;
+        max-height: var(--image-height);
+        border-radius: var(--image-radius);
+        overflow: hidden;
+        clip-path: inset(0 round var(--image-radius));
+        display: block;
+        object-fit: contain;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck" id="deck"></main>
+
+    <script>
+      const devices = {
+        iphone69: {
+          boardWidth: 1290,
+          boardHeight: 2796,
+          copyPaddingX: 92,
+          copyPaddingTop: 110,
+          copyGap: 26,
+          contentGap: 50,
+          titleSize: 92,
+          bodySize: 42,
+          imageWidth: 980,
+          imageHeight: 1720,
+          captureDir: "./captures/iphone"
+        },
+        ipad13: {
+          boardWidth: 2048,
+          boardHeight: 2732,
+          copyPaddingX: 140,
+          copyPaddingTop: 118,
+          copyGap: 30,
+          contentGap: 50,
+          titleSize: 124,
+          bodySize: 54,
+          imageWidth: 1820,
+          imageHeight: 1960,
+          captureDir: "./captures/ipad13"
+        }
+      };
+
+      const selectedDevice = devices.iphone69;
+
+      const cards = [
+        {
+          slug: "hero",
+          title: "Your first headline",
+          body: "Replace this line with one short supporting sentence.",
+          alt: "Sample screenshot 1"
+        },
+        {
+          slug: "plan",
+          title: "Your second headline",
+          body: "Use the same structure so exports stay consistent.",
+          alt: "Sample screenshot 2"
+        }
+      ];
+
+      const root = document.documentElement;
+      root.style.setProperty("--board-width", `${selectedDevice.boardWidth}px`);
+      root.style.setProperty("--board-height", `${selectedDevice.boardHeight}px`);
+      root.style.setProperty("--copy-padding-x", `${selectedDevice.copyPaddingX}px`);
+      root.style.setProperty("--copy-padding-top", `${selectedDevice.copyPaddingTop}px`);
+      root.style.setProperty("--copy-gap", `${selectedDevice.copyGap}px`);
+      root.style.setProperty("--content-gap", `${selectedDevice.contentGap}px`);
+      root.style.setProperty("--title-size", `${selectedDevice.titleSize}px`);
+      root.style.setProperty("--body-size", `${selectedDevice.bodySize}px`);
+      root.style.setProperty("--image-width", `${selectedDevice.imageWidth}px`);
+      root.style.setProperty("--image-height", `${selectedDevice.imageHeight}px`);
+
+      const deck = document.getElementById("deck");
+
+      cards.forEach((card) => {
+        const board = document.createElement("section");
+        board.className = "board";
+
+        board.innerHTML = `
+          <div class="board-inner">
+            <div class="copy">
+              <h1 class="title">${card.title}</h1>
+              <p class="body">${card.body}</p>
+            </div>
+            <div class="image-wrap">
+              <img
+                class="image"
+                src="${selectedDevice.captureDir}/${card.slug}.png"
+                alt="${card.alt}"
+              />
+            </div>
+          </div>
+        `;
+
+        deck.appendChild(board);
+      });
+    </script>
+  </body>
+</html>

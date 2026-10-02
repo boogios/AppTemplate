@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Fastlane Release"
+  short_description: "Safely build and ship Android releases to Google Play"
+  default_prompt: "Use $android-fastlane-release to prepare and verify an Android Google Play release."

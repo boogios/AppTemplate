@@ -1,0 +1,4 @@
+interface:
+  display_name: "Screenshot Android"
+  short_description: "Compose and validate Google Play screenshots with HTML/CSS"
+  default_prompt: "Use $screenshot-android to capture real Android UI, compose reusable HTML/CSS screenshot boards, and validate Google Play assets."

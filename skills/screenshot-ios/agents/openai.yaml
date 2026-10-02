@@ -1,0 +1,4 @@
+interface:
+  display_name: "Screenshot iOS"
+  short_description: "Create App Store screenshots with HTML and CSS"
+  default_prompt: "Use $screenshot-ios to create reusable App Store screenshot boards with HTML/CSS and real app captures."

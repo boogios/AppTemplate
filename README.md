@@ -91,6 +91,20 @@ Mixpanel, Supabase는 동작하지 않는 것이 정상입니다.
 - 결제 상품 ID와 앱 URL도 앱별로 바꿔야 합니다.
 - `.env`, `.p8`, 서명 파일, 로컬 설정 파일은 Git에 올리지 않습니다.
 
+## 스토어 이미지와 출시 스킬
+
+`skills/` 폴더에는 앱 출시 때 반복해서 사용하는 네 가지 작업 스킬이 함께
+들어 있습니다.
+
+- [`screenshot-ios`](skills/screenshot-ios/SKILL.md): 실제 iOS Simulator 화면 캡처와 App Store 이미지 구성
+- [`screenshot-android`](skills/screenshot-android/SKILL.md): 실제 Android 에뮬레이터 화면 캡처와 Google Play 이미지 구성
+- [`ios-fastlane-release`](skills/ios-fastlane-release/SKILL.md): iOS 빌드·메타데이터·TestFlight/App Store 출시 절차
+- [`android-fastlane-release`](skills/android-fastlane-release/SKILL.md): Android 빌드·서명·Google Play 출시 절차
+
+각 스킬의 보조 템플릿과 검증 스크립트는 해당 스킬 폴더 안에 함께 보관합니다.
+사용 방법과 필요한 키는 [`skills/README.md`](skills/README.md)에 정리되어
+있습니다. 실제 키와 서비스 계정 파일은 절대 저장소에 커밋하지 않습니다.
+
 ## 가장 쉬운 확인 방법
 
 ### iOS만 확인하기
