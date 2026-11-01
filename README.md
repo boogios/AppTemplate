@@ -10,7 +10,7 @@ Boogios 스타일의 네이티브 iOS·Android 앱을 빠르게 시작하기 위
 이 저장소는 완성된 하나의 앱이 아니라, 새로운 앱을 만들 때 반복해서 쓰는
 출발점입니다. 이미 홈 화면, 설정 화면, 온보딩, 다국어, 구독 화면, 광고와
 분석 SDK 연결 자리, 테스트 구조가 들어 있습니다. 따라서 새 앱을 만들 때마다
-로그인·테마·설정·권한 화면을 처음부터 다시 만들 필요가 없습니다.
+온보딩·테마·설정·권한 화면을 처음부터 다시 만들 필요가 없습니다.
 
 다만 이 템플릿만 복사한다고 바로 출시할 수 있는 것은 아닙니다. 앱 이름,
 아이콘, Bundle ID 또는 Application ID, 개인정보 처리방침 URL, 광고·분석 키,
@@ -257,3 +257,31 @@ JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
 
 출시 전에는 각 플랫폼의 README와 Fastlane 설정을 확인하고, 제품별 Bundle
 ID·Application ID·스토어 상품·키·개인정보 URL을 반드시 교체하세요.
+
+
+## 템플릿 1.1.0의 변경점
+
+- 구매·광고·저장·초기화의 상태와 테스트 경계를 두 네이티브 템플릿에 맞췄습니다. 기존 제품 앱에는 자동 적용하지 않습니다.
+- iOS는 SwiftUI, Android는 Kotlin/Compose를 유지합니다. React Native는 포함하지 않습니다.
+- Android Billing 9.1.0, 두 플랫폼 Fastlane 2.241.2를 사용합니다.
+- 실제 Duo 바깥·안쪽 캡처를 하나의 `APP_IPHONE_DUO` 세트로 검사하며 언어별 합계 10장 제한을 적용합니다.
+- 스토어 이미지는 로컬 검사 → 순차 업로드 → 원격 순서·체크섬·처리 완료 확인 → 기존 바이너리 제출 순서로 진행합니다. 심사를 자동 취소하지 않습니다.
+- 새 앱에 `template-manifest.json`을 기록합니다. `template_version`은 1.1.0, `store_assets`는 1.0.0이며 앱 스토어 버전과 별개입니다.
+- 앱 이름의 한글·따옴표·`&` 처리, 식별자 검사, 비밀 파일·빌드 산출물 제외 규칙을 두 생성기에 적용합니다.
+
+자세한 책임 구분과 적용 절차는 [네이티브 공통 기반](docs/native-template-foundation.md), 이미지 규격과 제출 절차는 [iOS 스토어 이미지](ios/fastlane/STORE_SCREENSHOTS.md)와 [Android 스토어 이미지](android/fastlane/STORE_SCREENSHOTS.md)를 확인하세요.
+
+로컬 검증:
+
+```sh
+python3 scripts/check-native-template.py ios --mode local
+python3 scripts/check-native-template.py android --mode local
+python3 scripts/test_native_template.py
+python3 -m unittest discover -s scripts/store_assets -p 'test_*.py'
+ruby scripts/store_assets/test_store_screenshot_sync.rb
+ruby scripts/store_assets/test_play_commit.rb
+ruby scripts/store_assets/test_release_order.rb
+python3 scripts/store_assets/sync_tools.py --check
+```
+
+Python 이미지 검사는 `python3 -m pip install -r scripts/store_assets/requirements.txt`가 필요합니다. 플랫폼 빌드·UI 테스트는 각 README와 `NATIVE_FOUNDATION.md`를 따릅니다. 위 도구 테스트는 실제 스토어 업로드·결제·광고 송출의 성공을 증명하지 않습니다.

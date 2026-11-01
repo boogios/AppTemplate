@@ -246,3 +246,16 @@ move it to `Features/<Feature>/` and split it by screen responsibility.
 - For release work, inspect `fastlane/Fastfile`, `fastlane/Appfile`, and
   `fastlane/.env` from the app root before upload or App Store review
   submission.
+
+## 공통 상태와 접근성 검증
+
+- `NATIVE_FOUNDATION.md`의 상태 계약을 사용한다. 로딩·빈 상품·오류를 구별하고 저장·상품 조회 실패에는 재시도를 제공한다.
+- 구매 보류와 사용자 취소를 실패 경고로 표시하지 않는다. 가격은 스토어에서 받은 표기만 사용한다.
+- 독일어 등 긴 문구, 최대 접근성 글씨 크기, 밝은/어두운 테마에서 온보딩과 설정·페이월의 버튼까지 도달할 수 있어야 한다.
+- 닫기·아이콘 버튼은 읽기 이름을 갖고 오류는 색상만으로 전달하지 않는다. 프리뷰는 외부 요청 없는 구성으로 실행한다.
+- 폰트 파일이 번들에 존재하는 것과 실제 등록되는 것은 따로 확인한다. iOS 폰트 등록 경로는 빌드 산출물 위치와 같아야 한다.
+
+
+## Store capture requirements
+
+Store assets must use real current app UI for each locale and display posture. Keep capture and board sizes explicit. iOS Duo outer/inner share one ten-image App Store set; Android large-screen exports use actual large-screen UI without external promotional copy. Draft/placeholder assets cannot enter submission. See `fastlane/STORE_SCREENSHOTS.md`.

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "platform": "ios",
+  "template_version": "1.1.0",
+  "modules": {
+    "foundation": "1.0.0",
+    "settings": "1.0.0",
+    "onboarding": "1.0.0",
+    "purchases": "1.0.0",
+    "ads": "1.0.0",
+    "analytics": "1.0.0",
+    "localization": "1.0.0",
+    "store_assets": "1.0.0"
+  }
+}

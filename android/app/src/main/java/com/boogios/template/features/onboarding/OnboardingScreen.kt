@@ -1,5 +1,8 @@
 package com.boogios.template.features.onboarding
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +34,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.boogios.template.core.config.AppConfig
 import com.boogios.template.R
 import com.boogios.template.data.settings.OnboardingStore
 import com.boogios.template.core.ui.components.BoogiosPrimaryButton
@@ -54,6 +56,8 @@ private enum class OnboardingStep {
 fun OnboardingScreen(
     mode: OnboardingMode,
     initialNickname: String = "",
+    saving: Boolean = false,
+    saveFailed: Boolean = false,
     onComplete: (String) -> Unit,
     onReplayDismiss: () -> Unit,
     onRequestNotifications: (onFinished: () -> Unit) -> Unit,
@@ -66,8 +70,8 @@ fun OnboardingScreen(
             OnboardingStep.values().toList()
         }
     }
-    var currentIndex by remember(mode) { mutableStateOf(0) }
-    var nickname by remember(initialNickname, mode) { mutableStateOf(initialNickname) }
+    var currentIndex by rememberSaveable(mode) { mutableStateOf(0) }
+    var nickname by rememberSaveable(initialNickname, mode) { mutableStateOf(initialNickname) }
     var showNicknameError by remember { mutableStateOf(false) }
     val step = steps[currentIndex]
 
@@ -79,7 +83,9 @@ fun OnboardingScreen(
         }
     }
 
+    var requesting by remember { mutableStateOf(false) }
     fun handleNext() {
+        if (requesting || saving) return
         when (step) {
             OnboardingStep.NICKNAME -> {
                 if (OnboardingStore.isValidNickname(nickname)) {
@@ -89,8 +95,8 @@ fun OnboardingScreen(
                     showNicknameError = true
                 }
             }
-            OnboardingStep.NOTIFICATIONS -> onRequestNotifications(::advance)
-            OnboardingStep.ADVERTISING -> onRequestAdPrivacy { onComplete(nickname.trim()) }
+            OnboardingStep.NOTIFICATIONS -> { requesting = true; onRequestNotifications { requesting = false; advance() } }
+            OnboardingStep.ADVERTISING -> { requesting = true; onRequestAdPrivacy { requesting = false; onComplete(nickname.trim()) } }
             else -> advance()
         }
     }
@@ -99,6 +105,7 @@ fun OnboardingScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -113,6 +120,7 @@ fun OnboardingScreen(
         Spacer(modifier = Modifier.height(28.dp))
         Text(
             text = step.title(),
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -128,7 +136,7 @@ fun OnboardingScreen(
                 label = stringResource(R.string.onboarding_nickname_placeholder),
                 value = nickname,
                 onValueChange = {
-                    nickname = it.take(20)
+                    nickname = it
                     showNicknameError = false
                 },
                 modifier = Modifier.testTag("onboarding.nickname"),
@@ -144,8 +152,10 @@ fun OnboardingScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(32.dp))
+        if (saveFailed) Text(stringResource(R.string.foundation_save_failed))
         BoogiosPrimaryButton(
+            enabled = !requesting && !saving,
             text = if (mode == OnboardingMode.REPLAY && currentIndex == steps.lastIndex) {
                 stringResource(R.string.onboarding_start)
             } else if (step == OnboardingStep.NOTIFICATIONS) {
@@ -221,7 +231,7 @@ private fun OnboardingStep.title(): String = when (this) {
 
 @Composable
 private fun OnboardingStep.description(): String = when (this) {
-    OnboardingStep.INTRO_ONE -> stringResource(R.string.onboarding_intro_one_description, AppConfig.appName)
+    OnboardingStep.INTRO_ONE -> stringResource(R.string.onboarding_intro_one_description, stringResource(R.string.app_name))
     OnboardingStep.INTRO_TWO -> stringResource(R.string.onboarding_intro_two_description)
     OnboardingStep.NICKNAME -> stringResource(R.string.onboarding_nickname_description)
     OnboardingStep.NOTIFICATIONS -> stringResource(R.string.onboarding_notifications_description)

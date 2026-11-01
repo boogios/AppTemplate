@@ -70,3 +70,16 @@ architecture intact unless the user explicitly asks to remove a template system.
   `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. Inspect
   `fastlane/Fastfile`, `fastlane/Appfile`, and `fastlane/.env` before upload or
   App Store review submission.
+
+## Native foundation contract
+
+- Follow `NATIVE_FOUNDATION.md` and retain `template-manifest.json` provenance. Do not remove baseline features.
+- Change SDK behavior through the dependency clients; isolated previews/tests must not send production analytics or request external SDKs.
+- Add a regression case for purchase, reward, or persistence changes. Preserve old storage keys and the last confirmed entitlement on partial failures.
+- Run local checks and platform tests, then generate and build a fresh temporary app before calling shared template changes verified. Run release checks separately; do not upload as part of verification.
+- Feed reusable fixes back with tests and a module version change. Apply to existing apps individually, never by overwriting their folders.
+
+
+## Store screenshot pipeline 1.1.0
+
+Read `fastlane/STORE_SCREENSHOTS.md` before store asset changes. Use the locked Fastlane 2.241.2 and app-local `fastlane/lib` tools. Validate expected locales/device sets, then upload and audit ordered remote checksums before the binary step. Keep upload journals ignored; never clear them to retry an uncertain request. Do not automatically cancel an active review. Product-page creative artwork remains a separate optional flow.

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,13 +72,17 @@ async function captureImage(config, deviceKey, card, locale, requireCapture) {
   const device = config.devices[deviceKey];
   const captureName = card.capture || card.slug;
   const captureRoot = path.join(__dirname, "captures", device.captureDir || deviceKey);
-  const candidates = [path.join(captureRoot, locale, `${captureName}.png`), path.join(captureRoot, `${captureName}.png`)];
+  const sharedLocale = config.sharedCaptureLocales?.[locale];
+  const candidates = [path.join(captureRoot, sharedLocale || locale, `${captureName}.png`)];
   for (const capturePath of candidates) {
-    try {
-      await fs.access(capturePath);
-      const image = await fs.readFile(capturePath);
-      return { href: `data:image/png;base64,${image.toString("base64")}`, placeholder: false };
-    } catch {}
+    let image;
+    try { image = await fs.readFile(capturePath); } catch (error) { if (error.code === "ENOENT") continue; throw error; }
+    if (image.toString("hex", 0, 8) !== "89504e470d0a1a0a") userError(`Capture must be a real PNG: ${capturePath}`);
+    const width = image.readUInt32BE(16), height = image.readUInt32BE(20);
+    if (deviceKey.startsWith("duo") && Math.abs(width / height - device.boardWidth / device.boardHeight) > .01) {
+      userError(`Duo capture aspect ratio does not match ${deviceKey}; capture that display instead of resizing an iPhone image.`);
+    }
+    return { href: `data:image/png;base64,${image.toString("base64")}`, placeholder: false };
   }
   {
     if (requireCapture) userError(`Missing real capture: ${candidates.map((candidate) => path.relative(rootDir, candidate)).join(" or ")}.`);
@@ -87,7 +92,7 @@ async function captureImage(config, deviceKey, card, locale, requireCapture) {
 }
 
 async function cardsFor(config, locale, deviceKey, requireCapture, onlyCard) {
-  const cards = onlyCard ? [onlyCard] : config.cards;
+  const cards = onlyCard ? [onlyCard] : deviceCards(config, deviceKey);
   return Promise.all(cards.map(async (card) => {
     const image = await captureImage(config, deviceKey, card, locale, requireCapture);
     return {
@@ -100,6 +105,16 @@ async function cardsFor(config, locale, deviceKey, requireCapture, onlyCard) {
       alt: `${config.appName} ${card.slug} screenshot`
     };
   }));
+}
+
+function deviceCards(config, deviceKey) {
+  const slugs = config.devices[deviceKey].cardSlugs;
+  if (!slugs) return config.cards;
+  return slugs.map(slug => {
+    const card = config.cards.find(card => card.slug === slug);
+    if (!card) userError(`Unknown card selection: ${deviceKey}/${slug}`);
+    return card;
+  });
 }
 
 async function htmlFor(config, manifest, locale, deviceKey, cards) {
@@ -142,6 +157,11 @@ async function browserCheck(page, locale, deviceKey, allowDraftLayout = false) {
 async function exportScreenshots(config, manifest, locales) {
   const drafts = draftLocales(config, locales);
   if (drafts.length && !allowDrafts) userError(`Draft localizations cannot export: ${drafts.join(", ")}. Use preview or complete the copy.`);
+  const duoCount = config.exportDevices.filter(key => key.startsWith("duo")).reduce((count, key) => count + deviceCards(config, key).length, 0);
+  if (duoCount > 10) userError("Duo outer and inner exports share one 10-image set. Select cardSlugs explicitly.");
+  await fs.mkdir(outputRoot, { recursive: true });
+  const statusPath = path.join(outputRoot, "export-status.json");
+  await fs.writeFile(statusPath, JSON.stringify({ production_ready: false, locales, devices: config.exportDevices }));
   const { chromium } = await import("playwright");
   const browser = await chromium.launch();
   const appSlug = slugify(config.appName);
@@ -152,8 +172,8 @@ async function exportScreenshots(config, manifest, locales) {
       await fs.mkdir(outputDir, { recursive: true });
       for (const deviceKey of config.exportDevices) {
         const device = config.devices[deviceKey];
-      for (let index = 0; index < config.cards.length; index += 1) {
-        const card = config.cards[index];
+      for (const card of deviceCards(config, deviceKey)) {
+        const index = config.cards.indexOf(card);
         const page = await browser.newPage({ viewport: { width: device.boardWidth, height: device.boardHeight }, deviceScaleFactor: 1 });
         const html = await htmlFor(config, manifest, locale, deviceKey, await cardsFor(config, locale, deviceKey, !allowPlaceholders, card));
         await page.setContent(html, { waitUntil: "networkidle" });
@@ -166,6 +186,13 @@ async function exportScreenshots(config, manifest, locales) {
       }
     }
   } finally { await browser.close(); }
+  const productionReady = !allowPlaceholders && !drafts.length;
+  await fs.writeFile(statusPath, JSON.stringify({ production_ready: productionReady, locales, devices: config.exportDevices }));
+  if (productionReady) {
+    const check = spawnSync("python3", [path.join(rootDir, "fastlane/lib/store_screenshots.py"), "--platform", "ios", "--root", outputRoot,
+      "--locales", locales.join(","), "--manifest", path.join(outputRoot, "screenshot-manifest.json"), "--require-provenance"], { stdio: "inherit" });
+    if (check.status !== 0) userError("Exported screenshot validation failed.");
+  }
   console.log(`Exported App Store screenshots to ${outputRoot}`);
 }
 
@@ -175,7 +202,7 @@ async function verifyReleaseRendering(config, manifest, locales) {
   try {
     for (const locale of locales) for (const deviceKey of config.exportDevices) {
       const device = config.devices[deviceKey];
-      for (const card of config.cards) {
+      for (const card of deviceCards(config, deviceKey)) {
         const page = await browser.newPage({ viewport: { width: device.boardWidth, height: device.boardHeight }, deviceScaleFactor: 1 });
         const html = await htmlFor(config, manifest, locale, deviceKey, await cardsFor(config, locale, deviceKey, true, card));
         await page.setContent(html, { waitUntil: "networkidle" });

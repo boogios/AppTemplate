@@ -1,0 +1,22 @@
+{
+  "app_id": "1234567890",
+  "bundle_id": "com.boogios.template",
+  "placements": ["header", "search"],
+  "assets": [
+    {
+      "locale": "en-US",
+      "file": "en-US/universal.png",
+      "sha256": "REPLACE_WITH_THE_FINAL_PNG_SHA256"
+    },
+    {
+      "locale": "ko",
+      "file": "ko/universal.png",
+      "sha256": "REPLACE_WITH_THE_FINAL_PNG_SHA256"
+    },
+    {
+      "locale": "ja",
+      "file": "ja/universal.png",
+      "sha256": "REPLACE_WITH_THE_FINAL_PNG_SHA256"
+    }
+  ]
+}

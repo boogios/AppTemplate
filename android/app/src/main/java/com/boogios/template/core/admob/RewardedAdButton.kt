@@ -16,6 +16,7 @@ fun RewardedAdButton(
     onEarnReward: () -> Unit,
     onFail: (() -> Unit)? = null,
 ) {
+    val advertising = com.boogios.template.core.foundation.LocalAdvertisingClient.current
     val context = LocalContext.current
     val activity = context.findActivity()
 
@@ -27,11 +28,13 @@ fun RewardedAdButton(
             AdMobManager.canRequestAds,
         onClick = {
             activity?.let {
-                RewardedAdService.present(
-                    activity = it,
-                    onEarnReward = onEarnReward,
-                    onFail = onFail,
-                )
+                advertising.reward(it) { result ->
+                    when (result) {
+                        com.boogios.template.core.foundation.RewardedAdOutcome.REWARDED -> onEarnReward()
+                        com.boogios.template.core.foundation.RewardedAdOutcome.FAILED -> onFail?.invoke()
+                        com.boogios.template.core.foundation.RewardedAdOutcome.DISMISSED -> Unit
+                    }
+                }
             }
         },
     )

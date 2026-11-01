@@ -43,9 +43,18 @@ fun AppRoot(
     onRequestAdPrivacy: (onFinished: () -> Unit) -> Unit,
     onRequestReview: () -> Unit,
 ) {
+    if (settingsStore.loadState != com.boogios.template.core.foundation.LoadState.READY || onboardingStore.loadState != com.boogios.template.core.foundation.LoadState.READY) {
+        val failed = settingsStore.loadState == com.boogios.template.core.foundation.LoadState.FAILED || onboardingStore.loadState == com.boogios.template.core.foundation.LoadState.FAILED
+        com.boogios.template.core.ui.components.AsyncStatus(loading = !failed,
+            messageRes = if (failed) R.string.foundation_load_failed else null,
+            retry = if (failed) ({ settingsStore.reload(); onboardingStore.reload() }) else null)
+        return
+    }
     if (!onboardingStore.hasCompletedOnboarding) {
         OnboardingScreen(
             mode = OnboardingMode.INITIAL,
+            saving = onboardingStore.isSaving,
+            saveFailed = onboardingStore.saveFailed,
             onComplete = { onboardingStore.complete(it) },
             onReplayDismiss = {},
             onRequestNotifications = onRequestNotifications,

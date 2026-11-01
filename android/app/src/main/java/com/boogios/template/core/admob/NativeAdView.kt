@@ -28,6 +28,7 @@ fun NativeAdCard(
     modifier: Modifier = Modifier,
     adUnitId: String = AppConfig.adMobNativeRequestId,
 ) {
+    if (androidx.compose.ui.platform.LocalInspectionMode.current || com.boogios.template.core.foundation.AppRuntime.isIsolated) return
     if (!AppConfig.hasAdMobNativeConfiguration || !AdMobManager.canRequestAds) return
 
     val context = LocalContext.current

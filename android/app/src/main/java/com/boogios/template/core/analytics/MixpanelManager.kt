@@ -10,7 +10,7 @@ object MixpanelManager {
     private var mixpanel: MixpanelAPI? = null
 
     fun initializeIfConfigured(context: Context) {
-        if (mixpanel != null || !AppConfig.hasMixpanelConfiguration) return
+        if (com.boogios.template.core.foundation.AppRuntime.isIsolated || mixpanel != null || !AppConfig.hasMixpanelConfiguration) return
 
         mixpanel = MixpanelAPI.getInstance(
             context.applicationContext,
@@ -59,6 +59,7 @@ object MixpanelManager {
     }
 
     fun track(event: String, properties: Map<String, Any?> = emptyMap()) {
+        if (com.boogios.template.core.foundation.AppRuntime.isIsolated) return
         val payload = JSONObject()
         properties.forEach { (key, value) ->
             if (value != null) payload.put(key, value)

@@ -24,7 +24,7 @@
     <string name="premium_purchase">Get Premium</string>
     <string name="premium_restore">Restore purchases</string>
     <string name="premium_active">Premium is active</string>
-    <string name="premium_unavailable">Premium products are not available yet. Add the product IDs in Google Play Console first.</string>
+    <string name="premium_unavailable">Premium plans are unavailable right now. Please try again.</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_value">System default</string>
     <string name="settings_theme">Theme</string>

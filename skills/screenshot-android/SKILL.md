@@ -68,7 +68,7 @@ For Boogios apps, a reference iOS app that registers `LINESeedKR-Rg.otf` and
 `LINESeedKR-Bd.otf` should use those files as the Android parity source, with a
 single canonical family name such as `LINE Seed Sans KR` in Compose and the
 screenshot board.
-5. Export only after real captures, localized copy, and layout are stable.
+Export only after real captures, localized copy, and layout are stable.
 
 ## Workflow
 
@@ -94,15 +94,18 @@ screenshot board.
    `02-plan.png`, and `03-do.png`. Keep the first three images focused on the
    app's core experience. Do not silently fall back to an English capture when
    a locale capture is missing; report that locale as incomplete.
-6. Create one HTML board per screenshot card. Keep the final board size
+6. For phone marketing assets, create one HTML board per screenshot card. For
+   tablet/Chromebook listing surfaces, export the actual large-screen app UI
+   without external promotional text. Keep the final board size
    pixel-locked for the selected device category, use `object-fit: contain` by
    default so the complete real app capture remains visible, and keep copy
    outside the app capture unless an overlay is explicitly requested. Reuse the
    same `cards` data across locales and swap localized copy and capture paths.
    Do not switch to a crop merely to remove side whitespace; remove artificial
    filler backgrounds instead.
-7. Render the HTML boards to PNG using the available browser or Playwright
-   capture workflow. Export one image per card into the matching locale/device
+7. Render the HTML boards to PNG using the user-authorized browser workflow. In
+   Boogios use only Codex in-app browser (iab); do not launch Chrome or a separate
+   Chromium/Playwright browser as a fallback. Export one image per card into the matching locale/device
    source folder; do not upload the HTML file itself to Play Console.
 8. Resize or crop proportionally. Never stretch a screenshot. When changing
    aspect ratio, preserve the complete capture with `contain` by default. Use a
@@ -113,8 +116,9 @@ screenshot board.
 10. Validate the full asset tree with the bundled validator before upload:
 
    ```sh
-   python3 /path/to/screenshot-android/scripts/validate_google_play_screenshots.py \
+   python3 ~/.codex/skills/screenshot-android/scripts/validate_google_play_screenshots.py \
      --root android/play/screenshots \
+     --locales en-US,ko-KR,ja-JP \
      --require phone=2 \
      --require seven-inch=4 \
      --require ten-inch=4 \
@@ -271,8 +275,8 @@ For multi-device or multi-locale projects:
 - Avoid device frames, fingers, fake badges, calls to action, rankings,
   testimonials, pricing claims, and time-sensitive claims.
 - For phone boards, use portrait 9:16 output by default. For large screens,
-  choose portrait 9:16 or landscape 16:9 intentionally and validate it as the
-  corresponding Google Play device category.
+  choose portrait 9:16 or landscape 16:9 intentionally; export actual large-screen
+  UI without external promotional text for tablet/Chromebook surfaces.
 
 ## Typography policy
 
@@ -400,22 +404,6 @@ The validator does not prove that the screenshot depicts the current app, that
 the copy is localized correctly, or that Play Console accepted the remote set.
 Perform visual and remote verification separately.
 
-## DayBlocks Android reference
-
-When working in a DayBlocks checkout, use these paths after
-verifying they still exist:
-
-- source screenshots: `android/play/screenshots/<locale>/phone`,
-  `seven-inch`, and `ten-inch`
-- source icon: `android/play/assets/app-icon-512.png`
-- source feature graphic: `android/play/graphics/feature-graphic-1024x500.png`
-- generated Fastlane assets: `android/fastlane/metadata/android/`
-- current locales: `de-DE`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `fr-FR`,
-  `ja-JP`, `ko-KR`, `zh-CN`, and `zh-TW`
-
-The current DayBlocks source uses six screenshots per locale/device set. Do not
-reduce or replace that set without checking the requested release scope.
-
 ## Verification report
 
 Report the following after creating or repairing assets:
@@ -427,3 +415,25 @@ Report the following after creating or repairing assets:
 - representative visual checks performed or skipped
 - remote Play Console verification performed or still pending
 - any generated files left ignored and any tracked source files changed
+
+## Completeness and release integration (verified 2026-10-28)
+
+Pass expected locales explicitly with `--locales`, and use repeated `--require`
+for every intended device category. Empty roots/locales, missing required folders
+and insufficient sets fail. Phone listing completeness is at least two screenshots
+in total; four 1080px phone screenshots is a recommendation-surface requirement,
+not the base listing minimum. Tablet exports use four real large-screen captures,
+1080..7680px and 16:9/9:16, without external marketing text. Phone/general limits
+remain 320..3840px and at most 2:1; do not apply the phone ceiling to tablets.
+
+Wear and TV have separate square/landscape checks. XR, Automotive and Chromebook
+upload routing need an explicit dedicated workflow; the standard template must
+report an unsupported category instead of uploading it as phone/tablet. Never
+add categories merely to satisfy a count. Apple Duo has no Play-specific slot.
+
+`--manifest` writes ordered paths, sizes, format, alpha state and checksums for
+Fastlane. The release skill installs a self-contained app-local copy, validates
+source images, stages only uploadable files, confirms remote ordered checksums,
+then proceeds with image upload disabled in the binary call. Keep icons/feature
+graphics validation separate from screenshot counts. This preflight does not
+prove visual quality, correct language or remote acceptance.

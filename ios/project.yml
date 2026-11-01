@@ -92,9 +92,23 @@ schemes:
     test:
       config: Debug
       targets:
-        - AppTemplateTests
+        - name: AppTemplateTests
+          skippedTests: [StoreKitLocalTests]
         - AppTemplateUITests
     run:
       config: Debug
     archive:
       config: Release
+  AppTemplateLocalTests:
+    build:
+      targets:
+        AppTemplate: all
+        AppTemplateTests: [test]
+    test:
+      config: Debug
+      targets:
+        - name: AppTemplateTests
+          selectedTests: [StoreKitLocalTests]
+    run:
+      config: Debug
+      storeKitConfiguration: AppTemplateTests/TemplateProducts.storekit

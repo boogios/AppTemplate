@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "locales": [
+    "en-US",
+    "ko-KR",
+    "ja-JP"
+  ],
+  "devices": [
+    "phone"
+  ]
+}

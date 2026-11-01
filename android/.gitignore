@@ -10,3 +10,10 @@ captures/
 fastlane/.env
 app/release/
 app/debug/
+
+# Generated store assets and resumable upload journals
+fastlane/.store-assets/
+fastlane/metadata/android/
+.bundle/
+vendor/bundle/
+fastlane/report.xml

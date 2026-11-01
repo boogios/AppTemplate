@@ -77,6 +77,11 @@
                BlueprintName = "AppTemplateTests"
                ReferencedContainer = "container:AppTemplate.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "StoreKitLocalTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "NO"

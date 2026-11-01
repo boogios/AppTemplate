@@ -23,6 +23,7 @@ final class AdMobManager: ObservableObject {
     private init() {}
     
     func startIfConfigured() {
+        guard !AppRuntime.isIsolated else { return }
         guard AppConfig.hasAdMobConfiguration else { return }
         guard didRequestConsent == false else { return }
         Task { @MainActor [weak self] in
@@ -32,7 +33,17 @@ final class AdMobManager: ObservableObject {
         }
     }
 
+    private var requestTask: Task<Void, Never>?
     func requestConsentForOnboarding() async {
+        guard !AppRuntime.isIsolated else { return }
+        if let requestTask { await requestTask.value; return }
+        let task = Task { await self.performRequest() }
+        requestTask = task
+        await task.value
+        requestTask = nil
+    }
+    private func performRequest() async {
+        guard !AppRuntime.isIsolated else { return }
         guard AppConfig.hasAdMobConfiguration else { return }
         guard didRequestConsent == false else { return }
         didRequestConsent = true

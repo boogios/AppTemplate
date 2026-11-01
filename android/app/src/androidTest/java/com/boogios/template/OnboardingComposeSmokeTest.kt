@@ -2,6 +2,8 @@ package com.boogios.template
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,14 +36,37 @@ class OnboardingComposeSmokeTest {
             }
         }
 
-        composeTestRule.onNodeWithTag("onboarding.next").performClick()
-        composeTestRule.onNodeWithTag("onboarding.next").performClick()
+        saveQAScreenshot("onboarding")
+        composeTestRule.onNodeWithTag("onboarding.next").performScrollTo().performClick()
+        composeTestRule.onNodeWithTag("onboarding.next").performScrollTo().performClick()
         composeTestRule.onNodeWithTag("onboarding.nickname").performTextInput(" Boogi ")
-        composeTestRule.onNodeWithTag("onboarding.next").performClick()
-        composeTestRule.onNodeWithTag("onboarding.next").performClick()
-        composeTestRule.onNodeWithTag("onboarding.start").performClick()
+        composeTestRule.onNodeWithTag("onboarding.next").performScrollTo().performClick()
+        composeTestRule.onNodeWithTag("onboarding.next").performScrollTo().performClick()
+        composeTestRule.onNodeWithTag("onboarding.start").performScrollTo().performClick()
 
         assertEquals("Boogi", completedNickname)
+    }
+
+    @Test
+    fun largeTextGermanDarkReplayButtonStaysReachable() {
+        composeTestRule.setContent {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val config = android.content.res.Configuration(context.resources.configuration).apply { setLocale(java.util.Locale.GERMAN) }
+            val density = androidx.compose.ui.platform.LocalDensity.current
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalContext provides context.createConfigurationContext(config),
+                androidx.compose.ui.platform.LocalConfiguration provides config,
+                androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, 2f),
+            ) {
+                AppTemplateTheme(themeMode = ThemeMode.DARK) {
+                    OnboardingScreen(mode = OnboardingMode.REPLAY, onComplete = {}, onReplayDismiss = {}, onRequestNotifications = { it() }, onRequestAdPrivacy = { it() })
+                }
+            }
+        }
+        composeTestRule.onNodeWithTag("onboarding.next").performScrollTo().assertIsDisplayed()
+        saveQAScreenshot("onboarding-german-large-dark")
+        composeTestRule.onNodeWithTag("onboarding.next").performClick()
+        composeTestRule.onNodeWithTag("onboarding.start").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -60,8 +85,8 @@ class OnboardingComposeSmokeTest {
             }
         }
 
-        composeTestRule.onNodeWithTag("onboarding.next").performClick()
-        composeTestRule.onNodeWithTag("onboarding.start").performClick()
+        composeTestRule.onNodeWithTag("onboarding.next").performScrollTo().performClick()
+        composeTestRule.onNodeWithTag("onboarding.start").performScrollTo().performClick()
 
         assertEquals(true, didDismiss)
     }

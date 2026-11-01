@@ -24,7 +24,7 @@
     <string name="premium_purchase">Get Premium</string>
     <string name="premium_restore">Restore purchases</string>
     <string name="premium_active">Premium is active</string>
-    <string name="premium_unavailable">Premium products are not available yet. Add the product IDs in Google Play Console first.</string>
+    <string name="premium_unavailable">Premium plans are unavailable right now. Please try again.</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_value">System default</string>
     <string name="settings_theme">Theme</string>
@@ -80,4 +80,11 @@
     <string name="ad_badge">AD</string>
     <string name="ad_call_to_action_fallback">Learn more</string>
     <string name="ad_content_description">Advertisement</string>
+    <string name="foundation_loading">Loading…</string>
+    <string name="foundation_retry">Try again</string>
+    <string name="foundation_load_failed">Could not load your data. Your saved data has not been replaced.</string>
+    <string name="foundation_save_failed">Could not save. Please try again.</string>
+    <string name="foundation_purchase_failed">Could not complete the purchase. Please try again.</string>
+    <string name="foundation_pending">Waiting for purchase approval.</string>
+    <string name="foundation_restored">Purchases checked.</string>
 </resources>

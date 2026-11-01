@@ -27,6 +27,9 @@ struct OnboardingView: View {
     let mode: Mode
     let onComplete: (String) -> Void
     let onReplayDismiss: () -> Void
+    var permissions: PermissionClient = .live
+    var saveFailed = false
+    @State private var requesting = false
 
     @State private var step: Step = .introOne
     @State private var nickname = ""
@@ -41,7 +44,7 @@ struct OnboardingView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ScrollView { VStack(spacing: 0) {
             HStack {
                 Spacer()
                 Text("\(currentIndex + 1)/\(visibleSteps.count)")
@@ -58,20 +61,22 @@ struct OnboardingView: View {
 
             Spacer(minLength: 20)
 
+            if saveFailed { Text(FoundationL10n.saveFailed).font(.body2).padding() }
             Button(action: advance) {
                 Text(buttonTitle)
                     .font(.pretendardSemiBold(size: 15))
-                    .foregroundStyle(Color.boogiosWhite)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
                     .background(Color.boogiosMain)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
-            .disabled(step == .nickname && !OnboardingStore.isValidNickname(nickname))
+            .disabled(requesting || (step == .nickname && !OnboardingStore.isValidNickname(nickname)))
             .opacity(step == .nickname && !OnboardingStore.isValidNickname(nickname) ? 0.45 : 1)
             .accessibilityIdentifier(buttonIdentifier)
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
+        }
         }
         .background(Color.boogiosGray1.ignoresSafeArea())
         .onAppear {
@@ -214,6 +219,7 @@ struct OnboardingView: View {
     }
 
     private func advance() {
+        guard !requesting else { return }
         guard let currentStepIndex = visibleSteps.firstIndex(of: step) else { return }
 
         if step == .nickname && !OnboardingStore.isValidNickname(nickname) {
@@ -236,16 +242,19 @@ struct OnboardingView: View {
                 moveToNextStep(after: currentStepIndex)
                 return
             }
+            requesting = true
             Task {
-                await NotificationAuthorizationManager.shared.requestIfNeeded()
+                defer { requesting = false }
+                await permissions.notifications()
                 await MainActor.run {
                     moveToNextStep(after: currentStepIndex)
                 }
             }
         case .advertising:
+            requesting = true
             Task {
-                await AdMobManager.shared.requestConsentForOnboarding()
-                await TrackingAuthorizationManager.shared.requestIfNeeded()
+                defer { requesting = false }
+                await permissions.advertising()
                 await MainActor.run {
                     onComplete(nickname)
                 }
@@ -265,5 +274,5 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView(mode: .initial, onComplete: { _ in }, onReplayDismiss: {})
+    OnboardingView(mode: .initial, onComplete: { _ in }, onReplayDismiss: {}, permissions: .disabled)
 }

@@ -41,6 +41,7 @@ import com.boogios.template.core.ui.theme.BoogiosMain
 
 @Composable
 fun PremiumPaywallDialog(premiumStore: PremiumStore, onDismiss: () -> Unit) {
+    androidx.compose.runtime.LaunchedEffect(premiumStore) { premiumStore.openPaywall() }
     val activity = LocalContext.current.findActivity()
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Card(
@@ -54,8 +55,8 @@ fun PremiumPaywallDialog(premiumStore: PremiumStore, onDismiss: () -> Unit) {
             ) {
                 Row {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.premium_title), style = MaterialTheme.typography.headlineMedium, color = BoogiosGray9)
-                        Text(stringResource(R.string.premium_description), style = MaterialTheme.typography.bodyMedium, color = BoogiosGray6, modifier = Modifier.padding(top = 6.dp))
+                        Text(stringResource(R.string.premium_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.premium_description), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
                     }
                     IconButton(onClick = onDismiss, modifier = Modifier.testTag("premium.close")) {
                         Icon(Icons.Default.Close, contentDescription = stringResource(R.string.dialog_close))
@@ -65,22 +66,25 @@ fun PremiumPaywallDialog(premiumStore: PremiumStore, onDismiss: () -> Unit) {
                 PremiumBenefit(stringResource(R.string.premium_feature_ads))
                 PremiumBenefit(stringResource(R.string.premium_feature_updates))
                 Text(stringResource(R.string.premium_plans), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                if (premiumStore.isLoading) com.boogios.template.core.ui.components.AsyncStatus(loading = true)
+                if (premiumStore.entitlement.state == com.boogios.template.core.foundation.EntitlementState.FAILED || premiumStore.productState == com.boogios.template.core.foundation.LoadState.FAILED || (!premiumStore.hasPremiumAccess && !premiumStore.isLoading && premiumStore.plans.isEmpty())) {
+                    Column(Modifier.testTag("premium.unavailable")) {
+                        com.boogios.template.core.ui.components.AsyncStatus(messageRes = R.string.premium_unavailable, retry = premiumStore::prepare)
+                    }
+                }
                 premiumStore.plans.forEach { plan ->
                     PremiumPlanRow(plan, plan.id == premiumStore.selectedProductId) { premiumStore.selectProduct(plan.id) }
                 }
-                if (premiumStore.plans.isEmpty()) {
-                    Text(stringResource(R.string.premium_unavailable), color = BoogiosGray6, modifier = Modifier.testTag("premium.unavailable"))
-                }
                 BoogiosPrimaryButton(
                     text = if (premiumStore.hasPremiumAccess) stringResource(R.string.premium_active) else stringResource(R.string.premium_purchase),
-                    enabled = activity != null && premiumStore.plans.isNotEmpty() && !premiumStore.hasPremiumAccess,
+                    enabled = !premiumStore.isPurchasing && !premiumStore.isLoading && activity != null && premiumStore.plans.isNotEmpty() && !premiumStore.hasPremiumAccess,
                     modifier = Modifier.testTag("premium.purchase"),
                 ) { activity?.let(premiumStore::purchase) }
                 TextButton(onClick = premiumStore::restore, modifier = Modifier.testTag("premium.restore")) {
                     Text(stringResource(R.string.premium_restore))
                 }
-                premiumStore.message?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = BoogiosGray6)
+                premiumStore.messageRes?.takeUnless { it == R.string.premium_unavailable }?.let {
+                    Text(stringResource(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -100,10 +104,10 @@ private fun PremiumPlanRow(plan: PremiumPlan, selected: Boolean, onClick: () -> 
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().testTag("premium.plan.${plan.id}"),
-        colors = CardDefaults.cardColors(containerColor = if (selected) BoogiosMain.copy(alpha = 0.14f) else BoogiosGray2),
+        colors = CardDefaults.cardColors(containerColor = if (selected) BoogiosMain.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Row(modifier = Modifier.padding(14.dp)) {
-            Icon(Icons.Default.Star, contentDescription = null, tint = if (selected) BoogiosMain else BoogiosGray6)
+            Icon(Icons.Default.Star, contentDescription = null, tint = if (selected) BoogiosMain else MaterialTheme.colorScheme.onSurfaceVariant)
             Column(modifier = Modifier.weight(1f).padding(start = 10.dp)) {
                 Text(
                     text = when (plan.id) {
@@ -112,12 +116,12 @@ private fun PremiumPlanRow(plan: PremiumPlan, selected: Boolean, onClick: () -> 
                         else -> stringResource(R.string.premium_lifetime)
                     },
                     style = MaterialTheme.typography.titleMedium,
-                    color = BoogiosGray9,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = if (plan.id == PremiumStore.lifetimeProductId) stringResource(R.string.premium_lifetime_description) else stringResource(R.string.premium_renews),
                     style = MaterialTheme.typography.bodySmall,
-                    color = BoogiosGray6,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Text(plan.price, style = MaterialTheme.typography.titleMedium, color = if (selected) BoogiosMain else BoogiosGray9)

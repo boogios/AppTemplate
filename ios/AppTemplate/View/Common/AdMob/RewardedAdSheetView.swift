@@ -1,177 +1,137 @@
-//
-//  RewardedAdSheetView.swift
-//  AppTemplate
-//
-
 import GoogleMobileAds
 import SwiftUI
 import UIKit
 
-struct RewardedAdSheetView: UIViewControllerRepresentable {
-    
-    @Binding var isPresented: Bool
-    
-    var adUnitID: String
-    var onEarnReward: () -> Void
-    var onFail: (() -> Void)?
-    
-    init(
-        isPresented: Binding<Bool>,
-        adUnitID: String = AppConfig.adMobRewardID,
-        onEarnReward: @escaping () -> Void,
-        onFail: (() -> Void)? = nil
-    ) {
-        self._isPresented = isPresented
-        self.adUnitID = adUnitID
-        self.onEarnReward = onEarnReward
-        self.onFail = onFail
-    }
-    
-    func makeUIViewController(context: Context) -> UIViewController {
-        let viewController = UIViewController()
-        viewController.view.isHidden = true
-        viewController.modalPresentationStyle = .overFullScreen
-        return viewController
-    }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        guard isPresented else { return }
-        
-        DispatchQueue.main.async {
-            isPresented = false
-        }
-        
-        guard AppConfig.hasAdMobRewardConfiguration else {
-            onFail?()
-            return
-        }
-        guard AdMobManager.shared.canRequestAds else {
-            onFail?()
-            return
-        }
-        
-        RewardedAdService.shared.present(
-            adUnitID: adUnitID,
-            from: uiViewController,
-            onEarnReward: onEarnReward,
-            onFail: onFail
-        )
+@MainActor
+final class RewardAttempt {
+    private(set) var earned = false
+    private var completion: ((RewardedAdOutcome) -> Void)?
+    init(completion: @escaping (RewardedAdOutcome) -> Void) { self.completion = completion }
+    func earn() { earned = true }
+    func finish(failed: Bool = false) {
+        let callback = completion
+        completion = nil
+        callback?(failed ? .failed : earned ? .rewarded : .dismissed)
     }
 }
 
 @MainActor
+final class RewardGate {
+    private(set) var current: RewardAttempt?
+    func begin(_ request: RewardAttempt, available: Bool) -> Bool {
+        guard available, current == nil else { request.finish(failed: true); return false }
+        current = request; return true
+    }
+    func finish(_ request: RewardAttempt, failed: Bool = false) {
+        guard current === request else { return }
+        current = nil
+        request.finish(failed: failed)
+    }
+}
+
+struct RewardedAdSheetView: UIViewControllerRepresentable {
+    @Environment(\.advertisingClient) private var advertisingClient
+    @Binding var isPresented: Bool
+    var adUnitID: String = AppConfig.adMobRewardID
+    var onEarnReward: () -> Void
+    var onFail: (() -> Void)? = nil
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = UIViewController()
+        controller.view.isHidden = true
+        return controller
+    }
+    func updateUIViewController(_ controller: UIViewController, context: Context) {
+        guard isPresented else { return }
+        // Consume the trigger before starting async work, including repeated SwiftUI updates.
+        guard !context.coordinator.requested else { return }
+        context.coordinator.requested = true
+        DispatchQueue.main.async {
+            isPresented = false
+            context.coordinator.requested = false
+        }
+        (advertisingClient ?? .live).reward(adUnitID, controller) { outcome in
+            if outcome == .rewarded { onEarnReward() }
+            else if outcome == .failed { onFail?() }
+        }
+    }
+    final class Coordinator { var requested = false }
+    func makeCoordinator() -> Coordinator { Coordinator() }
+}
+
+@MainActor
 final class RewardedAdService: NSObject, FullScreenContentDelegate {
-    
     static let shared = RewardedAdService()
-    
     private var ad: RewardedAd?
-    private var isLoading = false
-    private var isPresenting = false
-    private var pendingPresent: ((RewardedAd) -> Void)?
-    private var onDismiss: (() -> Void)?
-    
-    private override init() {}
-    
+    private var loadedID: String?
+    private var loadingID: String?
+    private var pending: ((RewardedAd?) -> Void)?
+    private let requests = RewardGate()
+    private var attempt: RewardAttempt? { requests.current }
+    private var presenting = false
+    private var presentedAd: RewardedAd?
+
     func preload(adUnitID: String = AppConfig.adMobRewardID) {
-        guard AppConfig.hasAdMobRewardConfiguration else { return }
-        guard ad == nil else { return }
-        
-        load(adUnitID: adUnitID)
+        guard available, ad == nil, loadingID == nil else { return }
+        load(adUnitID)
     }
-    
-    func present(
-        adUnitID: String = AppConfig.adMobRewardID,
-        from rootViewController: UIViewController,
-        onEarnReward: @escaping () -> Void,
-        onDismiss: (() -> Void)? = nil,
-        onFail: (() -> Void)? = nil
-    ) {
-        guard AppConfig.hasAdMobRewardConfiguration else {
-            onFail?()
-            onDismiss?()
-            return
+    private var available: Bool {
+        !AppRuntime.isIsolated && AppConfig.hasAdMobRewardConfiguration && AdMobManager.shared.canRequestAds
+    }
+    func present(adUnitID: String = AppConfig.adMobRewardID, from controller: UIViewController,
+                 onEarnReward: @escaping () -> Void, onDismiss: (() -> Void)? = nil, onFail: (() -> Void)? = nil) {
+        present(adUnitID: adUnitID, from: controller) { outcome in
+            switch outcome {
+            case .rewarded: onEarnReward()
+            case .dismissed: onDismiss?()
+            case .failed: onFail?()
+            }
         }
-        
-        guard !isPresenting else { return }
-        
-        let presentBlock: (RewardedAd) -> Void = { [weak self] ad in
-            guard let self else { return }
-            
-            self.isPresenting = true
-            self.ad = nil
+    }
+    func present(adUnitID: String, from controller: UIViewController, completion: @escaping (RewardedAdOutcome) -> Void) {
+        let analytics = AnalyticsClient.live
+        analytics.track(.rewardedAdRequested)
+        let request = RewardAttempt { outcome in
+            analytics.track(outcome == .rewarded ? .rewardedAdCompleted : outcome == .dismissed ? .rewardedAdDismissed : .rewardedAdFailed)
+            completion(outcome)
+        }
+        guard requests.begin(request, available: available && !presenting && (loadingID == nil || loadingID == adUnitID)) else { return }
+        let show: (RewardedAd?) -> Void = { [weak self, weak controller] ad in
+            guard let self, self.attempt === request else { return }
+            guard let ad, let controller, controller.viewIfLoaded?.window != nil else { self.finish(failed: true); return }
+            self.ad = nil; self.loadedID = nil; self.presenting = true
+            self.presentedAd = ad
             ad.fullScreenContentDelegate = self
-            ad.present(from: rootViewController) {
-                onEarnReward()
-            }
-            self.load(adUnitID: adUnitID)
+            ad.present(from: controller) { request.earn() }
         }
-        
-        self.onDismiss = { [weak self] in
-            self?.isPresenting = false
-            onDismiss?()
+        if let ad, loadedID == adUnitID { show(ad) }
+        else {
+            self.ad = nil; loadedID = nil; pending = show
+            if loadingID == nil { load(adUnitID) }
         }
-        
-        if let ad {
-            presentBlock(ad)
-        } else {
-            pendingPresent = presentBlock
-            load(adUnitID: adUnitID) { [weak self] didLoad in
+    }
+    private func load(_ id: String) {
+        guard available else { let callback = pending; pending = nil; callback?(nil); return }
+        loadingID = id
+        RewardedAd.load(with: id, request: Request()) { [weak self] ad, error in
+            Task { @MainActor in
                 guard let self else { return }
-                
-                if !didLoad {
-                    self.pendingPresent = nil
-                    onFail?()
-                    onDismiss?()
-                }
+                self.loadingID = nil
+                self.ad = error == nil ? ad : nil
+                self.loadedID = self.ad == nil ? nil : id
+                let callback = self.pending; self.pending = nil
+                callback?(self.ad)
             }
         }
     }
-    
-    private func load(adUnitID: String, completion: ((Bool) -> Void)? = nil) {
-        guard AppConfig.hasAdMobRewardConfiguration else {
-            completion?(false)
-            return
-        }
-        guard AdMobManager.shared.canRequestAds else {
-            completion?(false)
-            return
-        }
-        
-        guard !isLoading else { return }
-        
-        isLoading = true
-        
-        RewardedAd.load(with: adUnitID, request: Request()) { [weak self] ad, error in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                
-                self.isLoading = false
-                
-                if error != nil {
-                    self.ad = nil
-                    completion?(false)
-                    return
-                }
-                
-                self.ad = ad
-                
-                if let ad, let presentBlock = self.pendingPresent {
-                    self.pendingPresent = nil
-                    presentBlock(ad)
-                }
-                
-                completion?(true)
-            }
-        }
+    private func finish(failed: Bool = false) {
+        guard let previous = attempt else { return }
+        pending = nil; presenting = false; presentedAd = nil
+        requests.finish(previous, failed: failed)
     }
-    
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
-        onDismiss?()
-        onDismiss = nil
+        guard (ad as AnyObject) === presentedAd else { return }; finish()
     }
-    
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        onDismiss?()
-        onDismiss = nil
+        guard (ad as AnyObject) === presentedAd else { return }; finish(failed: true)
     }
 }

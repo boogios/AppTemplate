@@ -19,7 +19,7 @@ Use this skill when the user wants store screenshots built from reusable HTML/CS
 
 1. Lock the storefront target first.
    - Confirm App Store or TestFlight.
-   - Confirm device families: iPhone, iPad, or both.
+   - Confirm display sets: regular iPhone, Duo outer/inner, and iPad only if supported. Read [the current sizes and submission contract](references/app-store-screenshots.md).
    - Prefer real simulator captures if the app has stable screenshot seed data.
 2. Lock one export size per device family before styling.
    - Keep final board output pixel-locked.
@@ -42,7 +42,7 @@ Use this when the app can render screenshot-only seed data.
 2. Boot the target simulator and build once for that device family.
 3. Install the app and launch each scenario with launch arguments or environment flags.
 4. Capture one PNG per scenario with `xcrun simctl io screenshot`.
-5. Store captures per device family.
+5. Store captures per device family and locale. Document intentional shared-language captures; never silently substitute English.
    - Example:
      - `fastlane/screenshots/captures/iphone/`
      - `fastlane/screenshots/captures/ipad13/`
@@ -203,3 +203,25 @@ Adapt:
 - branding
 - device config
 - capture/export directory structure
+
+## Submission preflight and Duo
+
+Use `scripts/validate_app_store_screenshots.py --root <exports> --locales en-US,ko,ja
+--devices APP_IPHONE_61,APP_IPHONE_DUO --manifest <manifest.json>` before staging
+assets. The validator requires Pillow (`scripts/requirements.txt`). It validates
+RGB PNG/JPEG, accepted sizes, missing locales/display sets, alpha, duplicates and
+ordered groups. Duo outer/inner share one ten-image set and both are required by
+the new-template contract. Choose cards explicitly if the combined count exceeds
+ten; never discard images automatically. Regular iPhone defaults to 1206×2622;
+keep accepted legacy dimensions available. iPad assets are conditional on app support.
+
+Capture the real Duo posture, not a stretched phone image. Keep captures and HTML
+outside upload folders. Review folded/unfolded UI and representative localized
+boards before a product release. Report simulator/capture checks separately from
+store acceptance. The template's export-status.json prevents placeholders or draft
+translations entering its submission flow. The full rules, April 2027 deadline
+qualification and app-local Fastlane commands are in the linked reference.
+
+Use only the user's authorized browser surface for rendering. In the Boogios
+workspace use Codex's in-app browser (iab); do not launch Chrome or a standalone
+Chromium/Playwright browser as a fallback.

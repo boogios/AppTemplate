@@ -1,66 +1,56 @@
-//
-//  OnboardingStore.swift
-//  AppTemplate
-//
-
 import Foundation
 import SwiftUI
 
 @MainActor
 final class OnboardingStore: ObservableObject {
-
-    @Published private(set) var hasCompletedOnboarding: Bool
-    @Published private(set) var nickname: String
+    @Published private(set) var hasCompletedOnboarding = false
+    @Published private(set) var nickname = ""
+    @Published private(set) var loadState: LoadState = .loading
+    @Published private(set) var saveFailed = false
     @Published var isReplayPresented = false
+    private let preferences: PreferencesClient
+    private let analytics: AnalyticsClient
 
-    private let userDefaults: UserDefaults
-
-    init(userDefaults: UserDefaults = .standard) {
-        self.userDefaults = userDefaults
-
+    convenience init(userDefaults: UserDefaults = .standard) {
+        self.init(preferences: .defaults(userDefaults), analytics: .live)
+    }
+    init(preferences: PreferencesClient, analytics: AnalyticsClient) {
+        self.preferences = preferences; self.analytics = analytics
+        #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-reset-onboarding") {
-            userDefaults.removeObject(forKey: Keys.hasCompletedOnboarding)
-            userDefaults.removeObject(forKey: Keys.nickname)
+            try? preferences.write([Keys.completed: false, Keys.nickname: ""])
         }
-
         if ProcessInfo.processInfo.arguments.contains("-complete-onboarding") {
-            userDefaults.set(true, forKey: Keys.hasCompletedOnboarding)
-            userDefaults.set("Test User", forKey: Keys.nickname)
+            try? preferences.write([Keys.completed: true, Keys.nickname: "Test User"])
         }
-
-        hasCompletedOnboarding = userDefaults.bool(forKey: Keys.hasCompletedOnboarding)
-        nickname = userDefaults.string(forKey: Keys.nickname) ?? ""
+        #endif
+        reload()
     }
-
+    func reload() {
+        loadState = .loading
+        do {
+            let value = try preferences.read(Keys.completed)
+            guard value == nil || value is Bool else { throw PreferencesClient.PreferenceError.invalidValue }
+            let name = try preferences.string(Keys.nickname)
+            nickname = name; hasCompletedOnboarding = value as? Bool ?? false
+            loadState = .ready
+        } catch { loadState = .failed }
+    }
     func complete(nickname: String) {
-        let trimmedNickname = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard Self.isValidNickname(trimmedNickname) else { return }
-
-        self.nickname = trimmedNickname
-        hasCompletedOnboarding = true
-        userDefaults.set(trimmedNickname, forKey: Keys.nickname)
-        userDefaults.set(true, forKey: Keys.hasCompletedOnboarding)
-
-        MixpanelManager.shared.setUserProperties(nickname: trimmedNickname)
-        MixpanelManager.shared.track(event: "onboarding_completed")
+        guard loadState == .ready else { return }
+        let value = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard Self.isValidNickname(value) else { return }
+        do {
+            try preferences.write([Keys.nickname: value, Keys.completed: true])
+            self.nickname = value; hasCompletedOnboarding = true; saveFailed = false
+            analytics.setNickname(value); analytics.track(.onboardingCompleted)
+        } catch { saveFailed = true }
     }
-
-    func presentReplay() {
-        isReplayPresented = true
-        MixpanelManager.shared.track(event: "onboarding_replayed")
-    }
-
-    func dismissReplay() {
-        isReplayPresented = false
-    }
-
-    static func isValidNickname(_ nickname: String) -> Bool {
-        let trimmedNickname = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
-        return (1...20).contains(trimmedNickname.count)
-    }
-
+    func presentReplay() { isReplayPresented = true; analytics.track(.onboardingReplayed) }
+    func dismissReplay() { isReplayPresented = false }
+    static func isValidNickname(_ value: String) -> Bool { (1...20).contains(value.trimmingCharacters(in: .whitespacesAndNewlines).count) }
     private enum Keys {
-        static let hasCompletedOnboarding = "onboarding.hasCompleted"
+        static let completed = "onboarding.hasCompleted"
         static let nickname = "onboarding.nickname"
     }
 }

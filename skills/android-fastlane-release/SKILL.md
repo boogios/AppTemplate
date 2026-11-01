@@ -100,9 +100,7 @@ projects.
    before building or uploading. Treat generated `fastlane/metadata/android`
    files as a derived copy when the repository has a tracked source such as
    `play/metadata`.
-10. If screenshots changed, use the screenshot safety flow below. Do not let a
-    combined release lane blindly replace remote screenshots and submit for
-    review in the same pass.
+10. If screenshots changed, use the screenshot safety flow below. A single command may validate, upload and audit screenshots before proceeding to the binary step. Stop on an asset failure, and disable screenshot/image upload in the later supply call.
 11. Run the required preflight checks before any Play upload:
     - package and version consistency
     - signing and AAB/APK artifact checks
@@ -277,25 +275,6 @@ Use `bundle exec fastlane action upload_to_play_store` to confirm that options
 such as `sync_image_upload`, metadata upload, screenshot upload, release status,
 and track promotion are supported by the installed fastlane version.
 
-## DayBlocks Android reference
-
-When working in a DayBlocks checkout, use these project-specific defaults only
-after verifying that the files still match the live app:
-
-- Android release root: `<DayBlocks checkout>/android`
-- package: `com.boogios.dayblocks.paid`
-- tracked Play metadata: `android/play/metadata/`
-- tracked Play screenshots: `android/play/screenshots/`
-- generated supply metadata: `android/fastlane/metadata/android/`
-- current lanes: `bootstrap_check`, `sync_metadata`, `prepare_metadata`,
-  `validate`, `build_release`, `upload_listing`, `internal_test`,
-  `closed_test`, `production_draft`
-- `production_draft` builds and uploads a draft; final review submission is a
-  separate Play Console action under **게시 개요**
-
-Do not assume these paths, package values, lane names, or version values apply
-to another Android app.
-
 ## Verification
 
 - Confirm the built AAB/APK path and package/version values.
@@ -306,3 +285,33 @@ to another Android app.
 - Confirm review submission or public availability independently when requested.
 - Clearly report any skipped emulator, device, screenshot-visual, processing,
   or public-listing checks.
+
+## Screenshot automation contract (verified 2026-10-28)
+
+Use the app-local `validate_store_screenshots`, `upload_store_screenshots`, and
+`audit_store_screenshots` lanes when installed. The generated template's existing
+`upload` lane invokes them before building/uploading the AAB when source images
+exist or `ANDROID_UPLOAD_SCREENSHOTS=true`. With no images and no explicit request,
+its binary-only flow remains available. `ANDROID_SKIP_SCREENSHOTS=true` changes
+this to an audit; it never makes a missing explicitly requested set succeed.
+
+Use locked Fastlane 2.241.2 for the template automation. Keep source images in
+`play/screenshots/<locale>/<phone|seven-inch|ten-inch>/`, and enumerate expected
+locales/devices in `play/screenshot-config.json`. Validate with the screenshot
+skill's `scripts/validate_google_play_screenshots.py` using `--locales` plus
+`--require`. Empty roots, missing locales and missing category folders must fail.
+
+The bundled `scripts/play_store_screenshot_sync.rb --manifest <manifest> --upload`
+uses a Play edit, verifies ordered SHA-256 values, commits with changes not sent
+for review, then audits a fresh edit and aborts that read-only edit. Preserve an
+uncertain commit journal; resolve it by reading the committed listing, never by
+repeating a commit automatically. Unrelated locale/device sets are preserved.
+The final binary step uses `skip_upload_screenshots: true` and
+`skip_upload_images: true`. Keep the app's track, draft and managed-publishing
+behavior. This does not authorize a new review submission.
+
+Duo is an Apple display type. Android foldable captures use supported phone or
+tablet categories; do not invent a Duo Play category. Large-screen captures must
+show the actual large-screen UI. Do not add external promotional copy to tablet
+or Chromebook captures intended for large-screen surfaces. Read the current
+[Google Play requirements](https://support.google.com/googleplay/android-developer/answer/9866151).

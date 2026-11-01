@@ -30,6 +30,9 @@ struct MyPageView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                if settingsStore.saveFailed {
+                    AsyncStatusView(message: FoundationL10n.saveFailed, retry: settingsStore.retry)
+                }
                 premiumCard
                 VStack(spacing: 10) {
                     ForEach(sections) { section in
@@ -132,11 +135,4 @@ struct MyPageView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        MyPageView()
-            .environmentObject(SettingsStore())
-            .environmentObject(OnboardingStore())
-            .environmentObject(PremiumStore())
-    }
-}
+#Preview { AppPreview { NavigationStack { MyPageView() } } }

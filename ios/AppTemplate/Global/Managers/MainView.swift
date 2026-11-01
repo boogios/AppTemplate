@@ -32,9 +32,4 @@ struct MainView: View {
     }
 }
 
-#Preview {
-    MainView()
-        .environmentObject(AppStore())
-        .environmentObject(SettingsStore())
-        .environmentObject(NavigationPathManager())
-}
+#Preview { AppPreview { MainView() } }

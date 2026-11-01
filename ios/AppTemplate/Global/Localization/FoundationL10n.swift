@@ -1,0 +1,11 @@
+import Foundation
+
+enum FoundationL10n {
+    static var loading: String { L10n.text(en: "Loading…", ko: "불러오는 중…", ja: "読み込み中…", deDE: "Wird geladen…", frFR: "Chargement…", ptBR: "Carregando…", vi: "Đang tải…") }
+    static var retry: String { L10n.text(en: "Try again", ko: "다시 시도", ja: "再試行", deDE: "Erneut versuchen", frFR: "Réessayer", ptBR: "Tentar novamente", vi: "Thử lại") }
+    static var loadFailed: String { L10n.text(en: "Could not load your data. Your saved data has not been replaced.", ko: "데이터를 불러오지 못했어요. 기존 데이터는 그대로 유지됩니다.", ja: "データを読み込めませんでした。保存済みデータは変更されていません。", deDE: "Die Daten konnten nicht geladen werden. Gespeicherte Daten bleiben unverändert.", frFR: "Impossible de charger les données. Les données enregistrées restent intactes.", ptBR: "Não foi possível carregar os dados. Os dados salvos foram preservados.", vi: "Không thể tải dữ liệu. Dữ liệu đã lưu vẫn được giữ nguyên.") }
+    static var saveFailed: String { L10n.text(en: "Could not save. Please try again.", ko: "저장하지 못했어요. 다시 시도해 주세요.", ja: "保存できませんでした。もう一度お試しください。", deDE: "Speichern fehlgeschlagen. Bitte erneut versuchen.", frFR: "Échec de l’enregistrement. Veuillez réessayer.", ptBR: "Não foi possível salvar. Tente novamente.", vi: "Không thể lưu. Vui lòng thử lại.") }
+    static var purchaseFailed: String { L10n.text(en: "Could not complete the purchase. Please try again.", ko: "구매를 완료하지 못했어요. 다시 시도해 주세요.", ja: "購入を完了できませんでした。再試行してください。", deDE: "Der Kauf konnte nicht abgeschlossen werden. Bitte erneut versuchen.", frFR: "L’achat n’a pas abouti. Veuillez réessayer.", ptBR: "Não foi possível concluir a compra. Tente novamente.", vi: "Không thể hoàn tất giao dịch. Vui lòng thử lại.") }
+    static var pending: String { L10n.text(en: "Waiting for purchase approval.", ko: "구매 승인을 기다리고 있어요.", ja: "購入の承認を待っています。", deDE: "Warten auf Kaufgenehmigung.", frFR: "En attente de l’approbation de l’achat.", ptBR: "Aguardando aprovação da compra.", vi: "Đang chờ phê duyệt giao dịch.") }
+    static var restored: String { L10n.text(en: "Purchases checked.", ko: "구매 내역을 확인했어요.", ja: "購入履歴を確認しました。", deDE: "Käufe geprüft.", frFR: "Achats vérifiés.", ptBR: "Compras verificadas.", vi: "Đã kiểm tra giao dịch.") }
+}

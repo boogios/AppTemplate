@@ -24,7 +24,7 @@
     <string name="premium_purchase">プレミアムを始める</string>
     <string name="premium_restore">購入を復元</string>
     <string name="premium_active">プレミアム利用中</string>
-    <string name="premium_unavailable">プレミアム商品はまだ利用できません。Google Play Consoleに商品を登録してください。</string>
+    <string name="premium_unavailable">現在プレミアムプランを読み込めません。もう一度お試しください。</string>
     <string name="settings_language">言語</string>
     <string name="settings_language_value">システムのデフォルト</string>
     <string name="settings_theme">テーマ</string>
@@ -80,4 +80,11 @@
     <string name="ad_badge">広告</string>
     <string name="ad_call_to_action_fallback">詳しく見る</string>
     <string name="ad_content_description">広告</string>
+    <string name="foundation_loading">読み込み中…</string>
+    <string name="foundation_retry">再試行</string>
+    <string name="foundation_load_failed">データを読み込めませんでした。保存済みデータは変更されていません。</string>
+    <string name="foundation_save_failed">保存できませんでした。もう一度お試しください。</string>
+    <string name="foundation_purchase_failed">購入を完了できませんでした。再試行してください。</string>
+    <string name="foundation_pending">購入の承認を待っています。</string>
+    <string name="foundation_restored">購入履歴を確認しました。</string>
 </resources>

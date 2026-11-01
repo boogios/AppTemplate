@@ -16,6 +16,7 @@ fun BannerAdView(
     modifier: Modifier = Modifier,
     adUnitId: String = AppConfig.adMobBannerId,
 ) {
+    if (androidx.compose.ui.platform.LocalInspectionMode.current || com.boogios.template.core.foundation.AppRuntime.isIsolated) return
     if (!AppConfig.hasAdMobBannerConfiguration || !AdMobManager.canRequestAds) return
 
     val context = LocalContext.current

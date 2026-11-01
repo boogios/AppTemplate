@@ -1,4 +1,4 @@
 interface:
   display_name: "iOS Fastlane Release"
-  short_description: "Release iOS apps with fastlane."
-  default_prompt: "Use this skill when preparing, uploading, or submitting an iOS app release with fastlane."
+  short_description: "Release iOS apps and localized store creative assets."
+  default_prompt: "Use $ios-fastlane-release to prepare an iOS release, including localized App Store header and search creative assets, and verify the requested upload or submission."

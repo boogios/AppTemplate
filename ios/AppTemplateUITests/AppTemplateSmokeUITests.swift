@@ -1,9 +1,25 @@
 import XCTest
 
 final class AppTemplateSmokeUITests: XCTestCase {
+    private func capture(_ name: String, app: XCUIApplication) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name; attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+    func testLargeTextGermanDarkOnboardingRemainsReachable() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing", "-reset-onboarding", "-AppleLanguages", "(de)", "-AppleLocale", "de_DE", "-ui-test-dark", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        capture("onboarding-german-large-dark", app: app)
+        XCTAssertTrue(app.buttons["onboarding.next"].isHittable)
+        app.buttons["onboarding.next"].tap()
+    }
+
     func testSettingsSmokeFlowShowsCoreRows() {
         let app = XCUIApplication()
-        app.launchArguments += [
+        app.launchArguments += ["-ui-testing",
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_US",
             "-complete-onboarding"
@@ -23,14 +39,16 @@ final class AppTemplateSmokeUITests: XCTestCase {
         XCTAssertFalse(app.buttons["settings.privacy-options"].exists)
         XCTAssertFalse(app.buttons["settings.notifications"].exists)
 
+        capture("settings", app: app)
         app.buttons["settings.premium"].tap()
         XCTAssertTrue(app.buttons["premium.close"].waitForExistence(timeout: 3))
+        capture("paywall-empty", app: app)
         app.buttons["premium.close"].tap()
     }
 
     func testFirstLaunchOnboardingReachesHome() {
         let app = XCUIApplication()
-        app.launchArguments += [
+        app.launchArguments += ["-ui-testing",
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_US",
             "-reset-onboarding",
@@ -71,7 +89,7 @@ final class AppTemplateSmokeUITests: XCTestCase {
 
     func testSettingsCanReplayIntroOnly() {
         let app = XCUIApplication()
-        app.launchArguments += [
+        app.launchArguments += ["-ui-testing",
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_US",
             "-complete-onboarding"

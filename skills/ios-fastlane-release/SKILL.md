@@ -1,6 +1,6 @@
 ---
 name: ios-fastlane-release
-description: Use when releasing an iOS app to TestFlight or App Store Connect with fastlane, including new uploads, resubmissions after rejection, metadata or screenshot sync, build and version bumps, and review submission follow-through.
+description: Use when releasing an iOS app to TestFlight or App Store Connect with fastlane, including new uploads, resubmissions, metadata or screenshot sync, Asset Library creative images for product page headers and search results, build and version bumps, and review submission follow-through.
 ---
 
 # iOS Fastlane Release
@@ -12,6 +12,7 @@ Use this skill when the user asks to upload, resubmit, prepare, or finish an iOS
 - Upload a new iOS build to TestFlight or App Store Connect
 - Re-upload after rejection with a new build number
 - Sync App Store metadata or screenshots
+- Prepare, upload, audit, or place localized Asset Library header/search creative images
 - Submit a processed build to review
 - Diagnose a fastlane release that failed partway through
 
@@ -31,18 +32,21 @@ Use this skill when the user asks to upload, resubmit, prepare, or finish an iOS
    - Map variable names if the source repo uses different key names
    - Never copy secret values into `SKILL.md`, tracked repo files, `.env.default`, or any committed template
    - Never print secret values in terminal output or the final response
-6. Use the app's explicitly configured metadata defaults for every iOS Fastlane deployment, including metadata-only updates, TestFlight uploads, and App Store review submissions. Do not infer contact details, URLs, copyright, or category from another app or from an old local project. Confirm them from the app-local `fastlane/.env` before release:
-   - review contact email and phone: app-specific values in `fastlane/.env`
-   - marketing and support URLs: app-specific values in `fastlane/.env`
-   - App Store copyright: the app-specific rights holder and current release year
-   - App Store primary category: the category configured for the app
+6. Confirm app-specific public metadata for each deployment. The following are placeholders; replace them with your own verified values before release:
+   - review contact email: `your-email@example.com`
+   - review contact phone: `+00 0000000000`
+   - marketing URL: `https://example.com`
+   - support URL: `https://example.com/support`
+   - App Store copyright: `2026 BOOGIOS_STUDIO` (App Store Connect requires the year and rights holder)
+   - App Store primary category: `Apps.DeveloperTools` (App Store Connect label: `Developer Tools`)
    - privacy URL and service terms URL are app-specific and must be confirmed per app
-   - Before running `prepare_app_review_metadata`, `beta`, or `release`, verify that the lane's marketing URL, contact information, category, and copyright resolve to the intended app-specific values
-   - If app-local Fastlane metadata is missing or inconsistent, stop and ask for the intended values instead of copying defaults from another app
+   - Before running `prepare_app_review_metadata`, `beta`, or `release`, verify that the lane's marketing URL and copyright fallback resolve to the fixed values above, including the year in the copyright value
+   - If app-local Fastlane metadata contains a different marketing URL or copyright, update those fields to the shared defaults before release unless the user explicitly overrides them
 7. If lane names are unclear, run `bundle exec fastlane lanes` and follow the repo's existing release flow instead of inventing a new one.
 8. If metadata changed, run the repo's metadata preparation or `deliver`-style step before the upload lane.
    - In App Store description feature lists, use the square bullet `■` to match the user's existing app-listing style; do not use round bullets such as `•`.
-9. If screenshots changed, use the screenshot-only safety flow below before binary upload or review submission. Do not let a combined release lane upload screenshots and submit in the same pass.
+9. If screenshots changed, use the screenshot-only safety flow below before binary upload or review submission. A single release command may upload screenshots, audit them, and then upload/submit the binary sequentially. Never submit until the screenshot audit succeeds; disable screenshot uploads in the final deliver call.
+   - For every future first release and update, inspect the new localized header/search creative assets too. Follow [Creative assets](references/creative-assets.md) to install the separate app-local lanes, prepare accurate artwork, validate/audit it, and integrate ready artwork within the user's release scope. Preserve suitable approved art; report optional gaps without silently blocking the binary release. Library upload, version placement, asset approval and publication are distinct results.
 10. Bump build or marketing version only in the repo's source of truth.
 11. If the repo mirrors version values in multiple files, update every required location consistently before building.
 12. Regenerate the Xcode project only when the repo uses a generator such as XcodeGen or Tuist.
@@ -65,23 +69,12 @@ Treat screenshot upload as a separate, stateful operation. App Store Connect can
 
 1. Build the final localized screenshot folders before contacting App Store Connect.
 2. Verify each locale and device set has at most 10 images and no duplicate local checksums.
-3. Cancel an active review submission before changing screenshots.
-4. Prefer the bundled sequential sync script over Fastlane's parallel screenshot retry path:
-
-```sh
-APP_IDENTIFIER=com.example.app \
-APP_VERSION=1.2.3 \
-SCREENSHOTS_PATH="$PWD/fastlane/screenshots" \
-APP_STORE_CONNECT_API_KEY_KEY_ID=... \
-APP_STORE_CONNECT_API_KEY_ISSUER_ID=... \
-   APP_STORE_CONNECT_API_KEY_PATH=/path/to/AuthKey.p8 \
-   bundle exec ruby /path/to/ios-fastlane-release/scripts/app_store_screenshot_sync.rb --replace
-```
-
-5. The replacement must finish with exact remote checksum equality, the expected count per locale/device, and zero duplicate checksum groups.
-6. If App Store Connect reports a screenshot as missing or processing, do not immediately upload it again. Wait and re-run the script without `--replace` to audit remote state.
-7. After screenshot replacement succeeds, run all binary upload and review-submission retries with screenshot upload disabled, such as `RELEASE_SKIP_SCREENSHOTS=true`.
-8. Never re-run a combined `deliver` screenshot upload after any screenshots have already staged unless the remote sets were explicitly audited or deleted first.
+3. Inspect the target version state. Stop before changing screenshots on a locked or under-review version. Never cancel review automatically; cancellation requires explicit authorization.
+4. Read [current screenshot sizes and app-local integration](references/app-store-screenshots.md). Use locked Fastlane 2.241.2 for the validated Duo path. Earlier versions may reject Duo dimensions. Both Duo postures map to APP_IPHONE_DUO, with **10 images total per locale**, not 10 each.
+5. Validate actual exports, expected locales and display sets, then stage the ordered manifest. Require real posture-specific captures and ready translations. Install app-local copies of the scripts from this skill when an existing app needs integration.
+6. Run the app's `upload_store_screenshots` lane, or the bundled `scripts/app_store_screenshot_sync.rb --manifest <manifest> --upload`. Without `--upload` the script audits only. A changed selected set is replaced; matching sets are skipped. The old `--replace` switch is an alias for upload but still requires a validated manifest.
+7. Finish with exact ordered remote checksums, expected count per locale/display, complete processing and zero duplicate groups. Incomplete or unknown results stop the release. Preserve `.store-assets` journals and read back before retrying; do not clear state or blindly resend a timed-out POST.
+8. Continue binary upload/review with screenshot upload disabled. `RELEASE_SKIP_SCREENSHOTS=true` skips screenshot writes; when submitting for review, still audit the prepared local manifest against the remote version. Keep optional header/search creative-asset lanes and their approval/publication rules separate.
 
 ## Required localization preflight
 

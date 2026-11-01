@@ -60,8 +60,10 @@
         padding-top: var(--image-gap);
       }
       .screen-image {
-        width: 100%;
-        height: 100%;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
         display: block;
         object-fit: contain;
         border-radius: var(--image-radius);
@@ -71,11 +73,12 @@
         background: transparent;
       }
       .screen-image-frame {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: var(--image-width);
         height: var(--image-height);
         overflow: hidden;
-        border-radius: var(--image-radius);
-        clip-path: inset(0 round var(--image-radius));
         background: transparent;
       }
       .draft-badge {
@@ -204,8 +207,12 @@
         });
         window.__SCREENSHOT_READY__ = true;
         window.__SCREENSHOT_LAYOUT__ = checks;
+        document.documentElement.dataset.screenshotReady = "true";
       }
-      prepare();
+      prepare().catch(error => {
+        document.documentElement.dataset.screenshotError = error.message;
+        console.error(error);
+      });
     </script>
   </body>
 </html>

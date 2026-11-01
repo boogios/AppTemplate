@@ -24,7 +24,7 @@ struct BoogiosNavigationButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
-            .foregroundStyle(Color.boogiosWhite)
+            .foregroundStyle(.white)
             .background(Color.boogiosMain)
             .cornerRadius(14)
         }

@@ -1,9 +1,17 @@
-fastlane_version "2.228.0"
+fastlane_version "2.241.2"
 
 default_platform(:android)
 
 ANDROID_ROOT = File.expand_path("..", __dir__)
 PACKAGE_NAME = ENV.fetch("ANDROID_PACKAGE_NAME", "com.boogios.template")
+
+import "./store_assets.Fastfile"
+
+def play_service_key
+  names = %w[BOOGIOS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON SUPPLY_JSON_KEY_PATH SUPPLY_JSON_KEY GOOGLE_PLAY_JSON_KEY GOOGLE_APPLICATION_CREDENTIALS]
+  value = names.map { |name| ENV[name].to_s.strip }.find { |entry| !entry.empty? }
+  File.expand_path(value || "~/.config/boogios/google-play-service-account.json")
+end
 
 platform :android do
   desc "Build a debug-independent Android App Bundle"
@@ -17,16 +25,21 @@ platform :android do
 
   desc "Upload a prepared bundle to a Play Console track"
   lane :upload do
-    required = %w[SUPPLY_JSON_KEY_PATH ANDROID_PACKAGE_NAME]
+    required = %w[ANDROID_PACKAGE_NAME]
     missing = required.select { |key| ENV[key].to_s.strip.empty? }
     UI.user_error!("Missing release inputs: #{missing.join(', ')}") unless missing.empty?
+    UI.user_error!("Shared Play service account file missing") unless File.readable?(play_service_key)
+    screenshots_requested = ENV["ANDROID_UPLOAD_SCREENSHOTS"] == "true" || !Dir[File.join(ANDROID_ROOT, "play/screenshots/**/*.{png,jpg,jpeg}")].empty?
+    sync_store_screenshots!("android", upload: ENV["ANDROID_SKIP_SCREENSHOTS"] != "true") if screenshots_requested
     build_release
     upload_to_play_store(
       package_name: PACKAGE_NAME,
-      json_key: ENV.fetch("SUPPLY_JSON_KEY_PATH"),
+      json_key: play_service_key,
       aab: File.join(ANDROID_ROOT, "app", "build", "outputs", "bundle", "release", "app-release.aab"),
       track: ENV.fetch("ANDROID_TRACK", "internal"),
-      release_status: "draft"
+      release_status: "draft",
+      skip_upload_screenshots: true,
+      skip_upload_images: true
     )
   end
 end

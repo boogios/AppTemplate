@@ -1,5 +1,7 @@
 # Google Play Preview Asset Reference
 
+Last verified: 2026-10-28.
+
 Primary source: [Add preview assets to showcase your app](https://support.google.com/googleplay/android-developer/answer/9866151?hl=en)
 
 This reference is a working baseline, not a substitute for checking the live
@@ -25,7 +27,7 @@ Google may update them.
 
 For tablets and Chromebooks, Google currently describes a minimum of four
 screenshots for large-screen presentation, with images between 1080px and
-7680px and a 16:9 landscape or 9:16 portrait aspect ratio.
+7680px and a 16:9 landscape or 9:16 portrait aspect ratio. Exclude additional text outside the core app experience for tablet/Chromebook surfaces.
 
 For app recommendation surfaces, Google recommends at least four app
 screenshots at 1080×1920 portrait or 1920×1080 landscape. Treat this as a
@@ -45,3 +47,9 @@ constraints.
   recommends 3840×2400 and requires at least 1920×1200.
 
 Always verify the exact current section before generating conditional assets.
+
+
+Completeness: enumerate expected locales and required device folders. A missing
+folder is a failure, not an empty set to skip. Phone/general and tablet limits
+are separate profiles. The standard Fastlane API maps phone, seven-inch, ten-inch,
+TV and Wear categories; XR, Automotive and Chromebook require dedicated routing.

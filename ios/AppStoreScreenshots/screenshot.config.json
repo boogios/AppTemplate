@@ -20,8 +20,9 @@
     "en-AU"
   ],
   "exportDevices": [
-    "iphone69",
-    "ipad13"
+    "iphone63",
+    "duoOuter",
+    "duoInner"
   ],
   "theme": {
     "background": "#EAF0F8",
@@ -59,6 +60,48 @@
       "captureDir": "ipad13",
       "copyGap": 30,
       "imageGap": 48
+    },
+    "iphone63": {
+      "label": "iPhone Dynamic Island medium",
+      "boardWidth": 1206,
+      "boardHeight": 2622,
+      "paddingX": 84,
+      "paddingTop": 118,
+      "titleSize": 86,
+      "bodySize": 40,
+      "imageWidth": 965,
+      "imageHeight": 1835,
+      "captureDir": "iphone63",
+      "copyGap": 24,
+      "imageGap": 50
+    },
+    "duoOuter": {
+      "label": "iPhone Duo outer",
+      "boardWidth": 1398,
+      "boardHeight": 2034,
+      "paddingX": 98,
+      "paddingTop": 92,
+      "titleSize": 71,
+      "bodySize": 33,
+      "imageWidth": 1118,
+      "imageHeight": 1424,
+      "captureDir": "duoOuter",
+      "copyGap": 24,
+      "imageGap": 50
+    },
+    "duoInner": {
+      "label": "iPhone Duo inner",
+      "boardWidth": 2007,
+      "boardHeight": 2853,
+      "paddingX": 140,
+      "paddingTop": 128,
+      "titleSize": 98,
+      "bodySize": 46,
+      "imageWidth": 1606,
+      "imageHeight": 1997,
+      "captureDir": "duoInner",
+      "copyGap": 24,
+      "imageGap": 50
     }
   },
   "cards": [

@@ -21,6 +21,7 @@ fastlane/.env
 fastlane/*.p8
 fastlane/screenshots/
 fastlane/report.xml
+fastlane/.creative-assets-state/
 artifacts/
 outputs/
 
@@ -28,3 +29,10 @@ outputs/
 Configs/AppSecrets.xcconfig
 *.p12
 *.mobileprovision
+
+# Generated store assets and resumable upload journals
+fastlane/.store-assets/
+fastlane/metadata/android/
+.bundle/
+vendor/bundle/
+fastlane/report.xml

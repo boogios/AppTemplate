@@ -4,76 +4,49 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.datastore.preferences.SharedPreferencesMigration
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-
-private val Context.appSettingsDataStore by preferencesDataStore(
-    name = "app_settings",
-    produceMigrations = { context ->
-        listOf(SharedPreferencesMigration(context, "app_settings"))
-    },
-)
+import com.boogios.template.core.foundation.LoadState
+import kotlinx.coroutines.*
 
 enum class ThemeMode {
-    SYSTEM,
-    LIGHT,
-    DARK,
-    ;
-
-    companion object {
-        fun fromStorage(value: String?): ThemeMode =
-            values().firstOrNull { it.name == value } ?: SYSTEM
-    }
+    SYSTEM, LIGHT, DARK;
+    companion object { fun fromStorage(value: String?) = entries.firstOrNull { it.name == value } ?: SYSTEM }
 }
-
-class SettingsStore(context: Context) {
-    private val applicationContext = context.applicationContext
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
+class SettingsStore(
+    private val repository: PreferenceRepository,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+) {
+    constructor(context: Context) : this(DataStorePreferences.settings(context))
     var themeMode by mutableStateOf(ThemeMode.SYSTEM)
         private set
-
-    val selectedLanguage: AppLanguage
-        get() = AppLanguageManager.current()
-
-    init {
-        scope.launch {
-            applicationContext.appSettingsDataStore.data
-                .catch { emit(emptyPreferences()) }
-                .collect { preferences ->
-                    themeMode = ThemeMode.fromStorage(preferences[KEY_THEME])
-                }
+    var loadState by mutableStateOf(LoadState.LOADING)
+        private set
+    var saveFailed by mutableStateOf(false)
+        private set
+    private var observation: Job? = null
+    private var pendingTheme: ThemeMode? = null
+    private var saving = false
+    val selectedLanguage: AppLanguage get() = AppLanguageManager.current()
+    init { reload() }
+    fun reload() {
+        observation?.cancel(); loadState = LoadState.LOADING
+        observation = scope.launch {
+            try {
+                repository.values.collect { values -> themeMode = ThemeMode.fromStorage(values["app_theme"]); loadState = LoadState.READY }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { loadState = LoadState.FAILED }
         }
     }
-
-    fun setLanguage(language: AppLanguage) {
-        AppLanguageManager.set(language)
-    }
-
+    fun setLanguage(language: AppLanguage) { AppLanguageManager.set(language) }
     fun setTheme(theme: ThemeMode) {
-        themeMode = theme
+        if (loadState != LoadState.READY || saving) return
+        saving = true
         scope.launch {
-            applicationContext.appSettingsDataStore.edit { preferences ->
-                preferences[KEY_THEME] = theme.name
-            }
+            try { repository.write(mapOf("app_theme" to theme.name)); themeMode = theme; saveFailed = false; pendingTheme = null }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { saveFailed = true; pendingTheme = theme }
+            finally { saving = false }
         }
     }
-
-    fun close() {
-        scope.cancel()
-    }
-
-    private companion object {
-        val KEY_THEME = stringPreferencesKey("app_theme")
-    }
+    fun retry() { pendingTheme?.let(::setTheme) ?: reload() }
+    fun close() { scope.cancel() }
 }

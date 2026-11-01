@@ -16,6 +16,7 @@ final class MixpanelManager {
     private init() {}
     
     func initializeIfConfigured() {
+        guard !AppRuntime.isIsolated else { return }
         guard AppConfig.hasMixpanelConfiguration else { return }
         guard didInitialize == false else { return }
         

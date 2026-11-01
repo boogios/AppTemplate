@@ -23,16 +23,26 @@ object AdMobManager {
     private var consentInformation: ConsentInformation? = null
     private var didRequestConsent = false
     private var didStartAds = false
+    private var requesting = false
+    private val waiters = mutableListOf<() -> Unit>()
+    private fun finishRequest() {
+        requesting = false
+        val callbacks = waiters.toList(); waiters.clear()
+        callbacks.forEach { it() }
+    }
 
     fun start(activity: Activity) {
         requestConsentForOnboarding(activity) {}
     }
 
     fun requestConsentForOnboarding(activity: Activity, onFinished: () -> Unit) {
-        if (!AppConfig.hasAdMobConfiguration || didRequestConsent) {
+        if (com.boogios.template.core.foundation.AppRuntime.isIsolated || !AppConfig.hasAdMobConfiguration) {
             onFinished()
             return
         }
+        if (requesting) { waiters += onFinished; return }
+        if (didRequestConsent) { onFinished(); return }
+        requesting = true; waiters += onFinished
         didRequestConsent = true
 
         if (BuildConfig.DEBUG && AppConfig.adMobTestDevice.isNotBlank()) {
@@ -53,13 +63,13 @@ object AdMobManager {
                 UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
                     refreshConsentState(information)
                     startMobileAdsIfAllowed(activity.applicationContext)
-                    onFinished()
+                    finishRequest()
                 }
             },
             {
                 refreshConsentState(information)
                 startMobileAdsIfAllowed(activity.applicationContext)
-                onFinished()
+                finishRequest()
             },
         )
     }

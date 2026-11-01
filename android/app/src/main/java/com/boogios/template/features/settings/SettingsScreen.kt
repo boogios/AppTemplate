@@ -83,6 +83,7 @@ fun SettingsScreen(
                 .padding(horizontal = BoogiosSpacing.screen, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            if (settingsStore.saveFailed) com.boogios.template.core.ui.components.AsyncStatus(messageRes = R.string.foundation_save_failed, retry = settingsStore::retry)
             PremiumSettingCard(
                 isPremium = premiumStore.hasPremiumAccess,
                 onClick = onOpenPremium,
@@ -187,7 +188,6 @@ fun SettingsScreen(
             onSelected = { selected ->
                 settingsStore.setTheme(selected)
                 dialog = null
-                Toast.makeText(context, R.string.toast_updated, Toast.LENGTH_SHORT).show()
             },
         )
         null -> Unit

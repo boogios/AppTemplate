@@ -24,7 +24,7 @@
     <string name="premium_purchase">Obter Premium</string>
     <string name="premium_restore">Restaurar compras</string>
     <string name="premium_active">O Premium está ativo</string>
-    <string name="premium_unavailable">Os produtos Premium ainda não estão disponíveis. Cadastre-os primeiro no Google Play Console.</string>
+    <string name="premium_unavailable">Os planos Premium estão indisponíveis no momento. Tente novamente.</string>
     <string name="settings_language">Idioma</string>
     <string name="settings_language_value">Padrão do sistema</string>
     <string name="settings_theme">Tema</string>
@@ -80,4 +80,11 @@
     <string name="ad_badge">ANÚNCIO</string>
     <string name="ad_call_to_action_fallback">Saiba mais</string>
     <string name="ad_content_description">Publicidade</string>
+    <string name="foundation_loading">Carregando…</string>
+    <string name="foundation_retry">Tentar novamente</string>
+    <string name="foundation_load_failed">Não foi possível carregar os dados. Os dados salvos foram preservados.</string>
+    <string name="foundation_save_failed">Não foi possível salvar. Tente novamente.</string>
+    <string name="foundation_purchase_failed">Não foi possível concluir a compra. Tente novamente.</string>
+    <string name="foundation_pending">Aguardando aprovação da compra.</string>
+    <string name="foundation_restored">Compras verificadas.</string>
 </resources>

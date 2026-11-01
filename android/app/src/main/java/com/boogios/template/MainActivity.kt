@@ -40,21 +40,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        onboardingStore = OnboardingStore(applicationContext)
-        premiumStore = PremiumStore(applicationContext)
+        val dependencies = (application as AppTemplateAndroidApplication).dependencies
+        onboardingStore = dependencies.onboarding
+        premiumStore = dependencies.premium
         setContent {
-            val settingsStore = remember { SettingsStore(applicationContext) }
-            DisposableEffect(settingsStore) {
-                onDispose {
-                    settingsStore.close()
-                    onboardingStore.close()
-                    premiumStore.close()
-                }
-            }
+            val settingsStore = dependencies.settings
+            androidx.compose.runtime.CompositionLocalProvider(com.boogios.template.core.foundation.LocalAdvertisingClient provides dependencies.advertising) {
             AppTemplateTheme(themeMode = settingsStore.themeMode) {
                 LaunchedEffect(onboardingStore.hasCompletedOnboarding) {
                     if (onboardingStore.hasCompletedOnboarding) {
-                        AdMobManager.start(this@MainActivity)
+                        dependencies.advertising.consent(this@MainActivity) {}
                     }
                 }
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -62,22 +57,33 @@ class MainActivity : ComponentActivity() {
                         settingsStore = settingsStore,
                         onboardingStore = onboardingStore,
                         premiumStore = premiumStore,
-                        isPrivacyOptionsRequired = AdMobManager.isPrivacyOptionsRequired,
-                        onOpenPrivacyOptions = { AdMobManager.presentPrivacyOptions(this@MainActivity) },
+                        isPrivacyOptionsRequired = dependencies.advertising.privacyOptionsRequired,
+                        onOpenPrivacyOptions = { dependencies.advertising.privacyOptions(this@MainActivity) },
                         onRequestNotifications = ::requestNotificationPermission,
                         onRequestAdPrivacy = { onFinished ->
-                            AdMobManager.requestConsentForOnboarding(this@MainActivity, onFinished)
+                            dependencies.advertising.consent(this@MainActivity, onFinished)
                         },
                         onRequestReview = { inAppReviewManager.requestReview(this@MainActivity) },
                     )
                 }
             }
+            }
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        (application as AppTemplateAndroidApplication).dependencies.prepare()
+    }
+
     private fun requestNotificationPermission(onFinished: () -> Unit) {
-        if (!NotificationPermissionManager.shouldRequest(this)) {
+        if (!(application as AppTemplateAndroidApplication).dependencies.notifications.shouldRequest(this)) {
             onFinished()
+            return
+        }
+        val previous = pendingNotificationCompletion
+        if (previous != null) {
+            pendingNotificationCompletion = { previous(); onFinished() }
             return
         }
         pendingNotificationCompletion = onFinished

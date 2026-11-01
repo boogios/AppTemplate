@@ -1,4 +1,4 @@
-fastlane_version "2.228.0"
+fastlane_version "2.241.2"
 
 default_platform(:ios)
 
@@ -16,10 +16,13 @@ DEFAULT_SCHEME = "AppTemplate"
 DEFAULT_BUNDLE_ID = "com.boogios.template"
 DEFAULT_DISPLAY_NAME = "AppTemplate"
 DEFAULT_PRIMARY_CATEGORY = "Utilities"
-DEFAULT_SUPPORT_URL = "https://example.com/support"
+DEFAULT_SUPPORT_URL = "https://example.com"
 DEFAULT_MARKETING_URL = "https://example.com"
 DEFAULT_PRIVACY_URL = "https://example.com/AppTemplate/privacy"
 DEFAULT_TERMS_URL = "https://example.com/AppTemplate/terms"
+
+import "./creative_assets.Fastfile"
+import "./store_assets.Fastfile"
 
 def read_project_spec_value(key)
   spec = File.read(PROJECT_SPEC_PATH)
@@ -149,6 +152,7 @@ def ensure_common_inputs!
   key_path = ENV["APP_STORE_CONNECT_API_KEY_PATH"].to_s.strip
   key_content = ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].to_s.strip
   UI.user_error!("Set APP_STORE_CONNECT_API_KEY_PATH or APP_STORE_CONNECT_API_KEY_CONTENT in fastlane/.env") if key_content.empty? && key_path.empty?
+
   UI.user_error!("App Store Connect .p8 key not found at #{key_path}") if key_content.empty? && !File.exist?(key_path)
 
   required_keys = [
@@ -255,30 +259,7 @@ def ensure_beta_app_localizations!(bundle_id:, beta_description:, feedback_email
 end
 
 def sync_app_store_screenshots!
-  flat_source_files = Dir[File.join(APP_STORE_EXPORTS_DIR, "*.png")].sort
-  localized_source_files = metadata_locales.flat_map do |locale|
-    Dir[File.join(APP_STORE_EXPORTS_DIR, locale, "*.png")]
-  end.sort
-
-  if flat_source_files.empty? && localized_source_files.empty?
-    UI.user_error!("No exported App Store screenshots found in #{APP_STORE_EXPORTS_DIR}")
-  end
-
-  metadata_locales.each do |locale|
-    locale_dir = File.join(FASTLANE_SCREENSHOTS_DIR, locale)
-    source_files = Dir[File.join(APP_STORE_EXPORTS_DIR, locale, "*.png")].sort
-    source_files = flat_source_files if source_files.empty?
-    UI.user_error!("No exported App Store screenshots found for locale #{locale}") if source_files.empty?
-
-    FileUtils.mkdir_p(locale_dir)
-    Dir[File.join(locale_dir, "*.png")].each { |path| FileUtils.rm_f(path) }
-
-    source_files.each_with_index do |source_path, index|
-      base_name = format("%02d_apptemplate_app_store_%s.png", index + 1, File.basename(source_path, ".png"))
-      target_path = File.join(locale_dir, base_name)
-      FileUtils.cp(source_path, target_path)
-    end
-  end
+  prepare_store_screenshots!("ios")
 end
 
 def generate_app_store_screenshots!
@@ -485,6 +466,9 @@ platform :ios do
     submit_for_review = ENV["RELEASE_SUBMIT_FOR_REVIEW"] != "false"
     primary_category = metadata_value("APP_STORE_PRIMARY_CATEGORY", DEFAULT_PRIMARY_CATEGORY)
 
+    # Fail local screenshot validation before an expensive archive or remote edits.
+    prepare_store_screenshots!("ios") if submit_for_review || ENV["RELEASE_SKIP_SCREENSHOTS"] != "true"
+
     unless skip_binary_upload
       build_release(
         version: marketing_version,
@@ -493,7 +477,11 @@ platform :ios do
     end
 
     prepare_app_review_metadata(version: marketing_version)
-    sync_app_store_screenshots! unless ENV["RELEASE_SKIP_SCREENSHOTS"] == "true"
+    if ENV["RELEASE_SKIP_SCREENSHOTS"] != "true"
+      sync_store_screenshots!("ios", upload: true, version: marketing_version)
+    elsif submit_for_review
+      sync_store_screenshots!("ios", upload: false, version: marketing_version)
+    end
 
     deliver(
       api_key: api_key,
@@ -507,9 +495,9 @@ platform :ios do
       automatic_release: ENV["AUTOMATIC_RELEASE"] != "false",
       skip_binary_upload: skip_binary_upload,
       skip_metadata: true,
-      skip_screenshots: ENV["RELEASE_SKIP_SCREENSHOTS"] == "true",
+      skip_screenshots: true,
       screenshots_path: FASTLANE_SCREENSHOTS_DIR,
-      overwrite_screenshots: true,
+      overwrite_screenshots: false,
       primary_category: primary_category,
       force: true,
       run_precheck_before_submit: false

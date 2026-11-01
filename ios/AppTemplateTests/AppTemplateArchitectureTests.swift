@@ -111,8 +111,8 @@ final class AppTemplateArchitectureTests: XCTestCase {
     }
 
     @MainActor
-    func testPlaceholderAdMobSkipsPrivacyRequests() async {
-        XCTAssertFalse(AppConfig.hasAdMobConfiguration)
+    func testIsolatedExecutionSkipsPrivacyRequests() async {
+        XCTAssertTrue(AppRuntime.isIsolated)
 
         await AdMobManager.shared.requestConsentForOnboarding()
         await TrackingAuthorizationManager.shared.requestIfNeeded()

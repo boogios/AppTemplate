@@ -15,7 +15,17 @@ final class TrackingAuthorizationManager {
     
     private init() {}
     
+    private var requestTask: Task<Void, Never>?
     func requestIfNeeded() async {
+        guard !AppRuntime.isIsolated else { return }
+        if let requestTask { await requestTask.value; return }
+        let task = Task { await self.performRequest() }
+        requestTask = task
+        await task.value
+        requestTask = nil
+    }
+    private func performRequest() async {
+        guard !AppRuntime.isIsolated else { return }
         guard AppConfig.hasAdMobConfiguration else { return }
         guard didRequest == false else { return }
         guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else { return }

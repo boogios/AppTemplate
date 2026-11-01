@@ -1,0 +1,7 @@
+{
+  "exclude": {
+    "AppTemplateRN": "React Native is outside the native baseline",
+    "TemplateSmokeCheck": "Internal generator validation app"
+  },
+  "legacy_policy": "Report apps without a template manifest as adoption candidates; never infer product defects from different architecture. Add internal validation directories explicitly to exclude."
+}

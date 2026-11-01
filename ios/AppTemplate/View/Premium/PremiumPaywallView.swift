@@ -28,7 +28,18 @@ struct PremiumPaywallView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     hero
-                    if premiumStore.isPremium { activeState } else { benefits; products }
+                    if premiumStore.entitlementState == .checking {
+                        AsyncStatusView(isLoading: true)
+                    } else if premiumStore.entitlementState == .failed {
+                        AsyncStatusView(message: FoundationL10n.loadFailed, retry: { Task { await premiumStore.refreshEntitlements() } })
+                    }
+                    if !premiumStore.isPremium && ((premiumStore.products.isEmpty && !premiumStore.isLoading) || premiumStore.productState == .failed) {
+                        AsyncStatusView(message: PremiumL10n.productsUnavailable, retry: { Task { await premiumStore.loadProducts() } })
+                    }
+                    if premiumStore.isPremium { activeState } else {
+                        benefits
+                        if premiumStore.isLoading || !premiumStore.products.isEmpty { products }
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
@@ -52,8 +63,11 @@ struct PremiumPaywallView: View {
                 }
             }
         }
+        .onChange(of: premiumStore.products.map(\.id)) { _, ids in
+            if !ids.contains(selectedProductID ?? "") { selectedProductID = orderedProducts.first?.id }
+        }
         .task {
-            await premiumStore.loadProducts()
+            await premiumStore.openPaywall()
             if selectedProductID == nil { selectedProductID = orderedProducts.first?.id }
         }
     }
@@ -196,5 +210,5 @@ struct PremiumPaywallView: View {
 }
 
 #Preview {
-    PremiumPaywallView().environmentObject(PremiumStore()).environmentObject(SettingsStore())
+    AppPreview { PremiumPaywallView() }
 }

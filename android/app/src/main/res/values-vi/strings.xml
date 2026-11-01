@@ -24,7 +24,7 @@
     <string name="premium_purchase">Mở khóa Premium</string>
     <string name="premium_restore">Khôi phục giao dịch mua</string>
     <string name="premium_active">Premium đang hoạt động</string>
-    <string name="premium_unavailable">Sản phẩm Premium chưa khả dụng. Hãy thêm sản phẩm trong Google Play Console trước.</string>
+    <string name="premium_unavailable">Hiện chưa thể tải các gói Premium. Vui lòng thử lại.</string>
     <string name="settings_language">Ngôn ngữ</string>
     <string name="settings_language_value">Mặc định hệ thống</string>
     <string name="settings_theme">Giao diện</string>
@@ -80,4 +80,11 @@
     <string name="ad_badge">QUẢNG CÁO</string>
     <string name="ad_call_to_action_fallback">Tìm hiểu thêm</string>
     <string name="ad_content_description">Quảng cáo</string>
+    <string name="foundation_loading">Đang tải…</string>
+    <string name="foundation_retry">Thử lại</string>
+    <string name="foundation_load_failed">Không thể tải dữ liệu. Dữ liệu đã lưu vẫn được giữ nguyên.</string>
+    <string name="foundation_save_failed">Không thể lưu. Vui lòng thử lại.</string>
+    <string name="foundation_purchase_failed">Không thể hoàn tất giao dịch. Vui lòng thử lại.</string>
+    <string name="foundation_pending">Đang chờ phê duyệt giao dịch.</string>
+    <string name="foundation_restored">Đã kiểm tra giao dịch.</string>
 </resources>
