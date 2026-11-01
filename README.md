@@ -259,14 +259,14 @@ JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
 ID·Application ID·스토어 상품·키·개인정보 URL을 반드시 교체하세요.
 
 
-## 템플릿 1.1.1의 변경점
+## 템플릿 1.1.2의 변경점
 
 - 구매·광고·저장·초기화의 상태와 테스트 경계를 두 네이티브 템플릿에 맞췄습니다. 기존 제품 앱에는 자동 적용하지 않습니다.
 - iOS는 SwiftUI, Android는 Kotlin/Compose를 유지합니다. React Native는 포함하지 않습니다.
 - Android Billing 9.1.0, 두 플랫폼 Fastlane 2.241.2를 사용합니다.
 - 실제 Duo 바깥·안쪽 캡처를 하나의 `APP_IPHONE_DUO` 세트로 검사하며 언어별 합계 10장 제한을 적용합니다.
 - 스토어 이미지는 로컬 검사 → 순차 업로드 → 원격 순서·체크섬·처리 완료 확인 → 기존 바이너리 제출 순서로 진행합니다. 심사를 자동 취소하지 않습니다.
-- 새 앱에 `template-manifest.json`을 기록합니다. `template_version`은 1.1.1, `store_assets`는 1.0.1이며 앱 스토어 버전과 별개입니다.
+- 새 앱에 `template-manifest.json`을 기록합니다. `template_version`은 1.1.2, `store_assets`는 1.0.2이며 앱 스토어 버전과 별개입니다.
 - 앱 이름의 한글·따옴표·`&` 처리, 식별자 검사, 비밀 파일·빌드 산출물 제외 규칙을 두 생성기에 적용합니다.
 
 자세한 책임 구분과 적용 절차는 [네이티브 공통 기반](docs/native-template-foundation.md), 이미지 규격과 제출 절차는 [iOS 스토어 이미지](ios/fastlane/STORE_SCREENSHOTS.md)와 [Android 스토어 이미지](android/fastlane/STORE_SCREENSHOTS.md)를 확인하세요.
@@ -287,3 +287,5 @@ python3 scripts/store_assets/sync_tools.py --check
 Python 이미지 검사는 `python3 -m pip install -r scripts/store_assets/requirements.txt`가 필요합니다. 플랫폼 빌드·UI 테스트는 각 README와 `NATIVE_FOUNDATION.md`를 따릅니다. 위 도구 테스트는 실제 스토어 업로드·결제·광고 송출의 성공을 증명하지 않습니다.
 
 1.1.1 패치에서는 Apple 이미지 처리 지연에 대비한 재조회 옵션을 추가했습니다. 기본값은 30초로 유지하며, `STORE_SCREENSHOT_POLL_ATTEMPTS=100`으로 최대 5분까지 기다릴 수 있습니다. 중복 업로드 방지와 기존 업로드 기록은 유지됩니다.
+
+1.1.2 패치에서는 최종 제출 단계가 메타데이터를 생략하더라도 iOS의 자동/수동 출시 설정이 서버에 반영되도록 준비 단계에서 명시합니다. 기존 기본값은 유지하며 두 경우 모두 회귀 검사에 포함합니다.

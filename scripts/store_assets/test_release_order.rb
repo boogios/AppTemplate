@@ -8,6 +8,7 @@ class LaneHarness
   end
   module UI
     def self.user_error!(message);raise message;end
+    def self.important(_message); end
   end
   attr_reader :events, :lanes
   attr_accessor :asset_failure
@@ -42,6 +43,13 @@ end
 
 class ReleaseOrderTest < Minitest::Test
   ROOT=File.expand_path('../..',__dir__)
+  class VersionSpy
+    attr_reader :attributes
+    def update(attributes:); @attributes=attributes; end
+    def fetch_app_store_review_detail
+      Object.new.tap { |detail| def detail.update(attributes:); end }
+    end
+  end
   def setup
     @original=ENV.to_h
     %w[RELEASE_SKIP_SCREENSHOTS RELEASE_SKIP_BINARY_UPLOAD RELEASE_SUBMIT_FOR_REVIEW ANDROID_SKIP_SCREENSHOTS].each { |key| ENV.delete(key) }
@@ -52,6 +60,25 @@ class ReleaseOrderTest < Minitest::Test
   def harness(platform)
     folder=platform==:ios ? 'ios' : 'android'
     LaneHarness.new(File.join(ROOT,folder,'fastlane/Fastfile'),platform)
+  end
+  def prepared_version
+    h=harness(:ios)
+    version=VersionSpy.new
+    h.define_singleton_method(:ensure_app_store_version!) { |**_| version }
+    h.define_singleton_method(:metadata_locales) { [] }
+    h.define_singleton_method(:app_has_live_version?) { |**_| false }
+    h.run(:prepare_app_review_metadata)
+    version
+  end
+  def test_manual_release_is_applied_before_metadata_skipping_deliver
+    ENV['AUTOMATIC_RELEASE']='false'
+    assert_equal 'MANUAL',prepared_version.attributes[:releaseType]
+  end
+  def test_automatic_release_default_is_preserved
+    [nil,'true'].each do |value|
+      value ? ENV['AUTOMATIC_RELEASE']=value : ENV.delete('AUTOMATIC_RELEASE')
+      assert_equal 'AFTER_APPROVAL',prepared_version.attributes[:releaseType]
+    end
   end
   def test_ios_assets_finish_before_deliver_and_deliver_never_reuploads
     h=harness(:ios);h.run(:release)

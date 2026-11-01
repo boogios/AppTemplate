@@ -25,7 +25,7 @@ class GeneratorTests(unittest.TestCase):
                 generate(args)
                 app = Path(tmp)/('FoundationCheck' + ('-Android' if platform=='android' else ''))
                 manifest=json.loads((app/'template-manifest.json').read_text())
-                self.assertEqual(manifest['template_version'],'1.1.1')
+                self.assertEqual(manifest['template_version'],'1.1.2')
                 self.assertEqual(manifest['application_id'], args.identifier)
                 self.assertEqual(checker.check(app)[0], [])
                 if platform=='ios':
