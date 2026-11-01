@@ -74,3 +74,10 @@ are replaced. Unknown POST results stop for bounded read-back; never clear the
 journal to force a retry. Read-back must confirm count, processing, no duplicates
 and ordered checksums. If a prior request remains invisible, report the blocker.
 An upload/audit is not approval, submission or publication.
+
+The default read-back budget remains 10 polls at 3-second intervals. If Apple
+reports `UPLOAD_COMPLETE` while processing is still pending, preserve the journal
+and read the current state before resuming. `STORE_SCREENSHOT_POLL_ATTEMPTS=100`
+allows up to 5 minutes of polling intervals (network request time is separate); `STORE_SCREENSHOT_POLL_INTERVAL` defaults
+to 3 seconds. Invalid values or polling intervals totaling above 300 seconds fail before contacting
+the store. This extends reads only; it never repeats an uncertain upload.

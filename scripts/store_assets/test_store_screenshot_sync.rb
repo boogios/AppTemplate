@@ -1,4 +1,18 @@
 require 'minitest/autorun'
+
+class ProcessingBudgetTest < Minitest::Test
+  def test_defaults_remain_unchanged_and_longer_wait_is_bounded
+    assert_equal({polls: 10, interval: 3}, StoreScreenshots.poll_options({}))
+    assert_equal({polls: 100, interval: 3}, StoreScreenshots.poll_options({'STORE_SCREENSHOT_POLL_ATTEMPTS' => '100'}))
+  end
+
+  def test_invalid_or_unbounded_wait_is_rejected
+    ['0', '-1', '101', 'invalid'].each do |value|
+      assert_raises(StoreScreenshots::Error) { StoreScreenshots.poll_options({'STORE_SCREENSHOT_POLL_ATTEMPTS' => value}) }
+    end
+    assert_raises(StoreScreenshots::Error) { StoreScreenshots.poll_options({'STORE_SCREENSHOT_POLL_ATTEMPTS' => '100', 'STORE_SCREENSHOT_POLL_INTERVAL' => '4'}) }
+  end
+end
 require 'tmpdir'
 require_relative 'store_screenshot_sync'
 

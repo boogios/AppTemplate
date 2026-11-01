@@ -32,8 +32,8 @@ def check(root,mode='local'):
     need(manifest.get('schema_version')==1,'Unsupported manifest schema')
     need(bool(re.fullmatch(r'\d+\.\d+\.\d+',manifest.get('template_version',''))),'Invalid template version')
     need(all(x in manifest.get('modules',{}) for x in ['foundation','settings','onboarding','purchases','ads','analytics','localization']),'Missing module versions')
-    if manifest.get('template_version') == '1.1.0':
-        need(manifest.get('modules',{}).get('store_assets')=='1.0.0','Missing store asset contract version')
+    if manifest.get('template_version') in {'1.1.0', '1.1.1'}:
+        need(manifest.get('modules',{}).get('store_assets') in {'1.0.0', '1.0.1'},'Missing store asset contract version')
         for relative in ['fastlane/store_assets.Fastfile','fastlane/lib/store_screenshots.py','fastlane/lib/store_screenshot_sync.rb','fastlane/lib/requirements.txt','Gemfile','Gemfile.lock']:
             need((root/relative).is_file(),f'Missing store asset tool: {relative}')
         gemfile=root/'Gemfile'

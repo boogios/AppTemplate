@@ -193,3 +193,7 @@ JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
 ## Store screenshot pipeline 1.1.0
 
 Read `fastlane/STORE_SCREENSHOTS.md` before store asset changes. Use the locked Fastlane 2.241.2 and app-local `fastlane/lib` tools. Validate expected locales/device sets, then upload and audit ordered remote checksums before the binary step. Keep upload journals ignored; never clear them to retry an uncertain request. Do not automatically cancel an active review. Product-page creative artwork remains a separate optional flow.
+
+### Store asset patch 1.1.1
+
+`store_assets` 1.0.1 adds optional bounded polling for delayed store processing. The default remains 10 polls at 3-second intervals. `STORE_SCREENSHOT_POLL_ATTEMPTS=100` permits up to 300 seconds of polling intervals, excluding network request time, while preserving journals and avoiding repeated uploads.

@@ -194,6 +194,17 @@ module StoreScreenshots
     names.map { |key| ENV[key].to_s.strip }.find { |value| !value.empty? }
   end
 
+  def self.poll_options(env = ENV)
+    attempts = Integer(env.fetch("STORE_SCREENSHOT_POLL_ATTEMPTS", "10"))
+    interval = Integer(env.fetch("STORE_SCREENSHOT_POLL_INTERVAL", "3"))
+    unless (1..100).cover?(attempts) && (1..30).cover?(interval) && attempts * interval <= 300
+      raise Error, "Screenshot processing wait must use 1..100 polls, 1..30 seconds and at most 300 seconds total"
+    end
+    {polls: attempts, interval: interval}
+  rescue ArgumentError, TypeError
+    raise Error, "Screenshot poll settings must be integers"
+  end
+
   def self.cli(argv = ARGV)
     args = {mode: "audit"}
     OptionParser.new do |parser|
@@ -204,6 +215,7 @@ module StoreScreenshots
     end.parse!(argv)
     raise Error, "Unknown arguments" unless argv.empty?
     raise Error, "--manifest required; run local validation first" unless args[:manifest]
+    polling = poll_options
     manifest = JSON.parse(File.read(args[:manifest]))
     raise Error, "Invalid screenshot manifest" unless manifest["schema_version"] == 1 && !manifest.fetch("sets").empty?
     platform = manifest.fetch("platform")
@@ -226,7 +238,7 @@ module StoreScreenshots
       credentials[:filepath] = File.expand_path(key_path)
       adapter = IOS.new(identifier, version, credentials)
       adapter.editable! if upload
-      Sync.new(adapter: adapter, manifest: manifest, state_path: state_path).run(upload: upload)
+      Sync.new(adapter: adapter, manifest: manifest, state_path: state_path, **polling).run(upload: upload)
     else
       key = environment("BOOGIOS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "SUPPLY_JSON_KEY_PATH", "SUPPLY_JSON_KEY", "GOOGLE_PLAY_JSON_KEY", "GOOGLE_APPLICATION_CREDENTIALS") || File.expand_path("~/.config/boogios/google-play-service-account.json")
       raise Error, "Shared Play service account file missing" unless File.readable?(File.expand_path(key))
@@ -235,7 +247,7 @@ module StoreScreenshots
       if File.file?(state_path) && (prior = JSON.parse(File.read(state_path)))["phase"] == "pending_commit"
         begin
           raise Error, "Uncertain prior Play commit with different inputs; reconcile first" unless prior["fingerprint"] == fingerprint
-          Sync.new(adapter: adapter, manifest: manifest, state_path: state_path + '.audit').run(upload: false)
+          Sync.new(adapter: adapter, manifest: manifest, state_path: state_path + '.audit', **polling).run(upload: false)
           File.write(state_path, JSON.generate({"phase" => "verified", "fingerprint" => fingerprint}))
           puts "Prior Play commit verified; no repeated upload"
           return 0
@@ -246,7 +258,7 @@ module StoreScreenshots
       # An edit is atomic. Never reuse an uncommitted edit's local upload ledger.
       edit_state = state_path + ".edit-#{adapter.client.current_edit.id}"
       begin
-        sync = Sync.new(adapter: adapter, manifest: manifest, state_path: edit_state)
+        sync = Sync.new(adapter: adapter, manifest: manifest, state_path: edit_state, **polling)
         sync.run(upload: upload)
         if upload && sync.changed
           # Save commit intent: an uncertain commit is reconciled by a fresh read,
@@ -255,7 +267,7 @@ module StoreScreenshots
           File.write(state_path, JSON.generate({"phase" => "pending_commit", "fingerprint" => fingerprint}))
           adapter.commit
           adapter.begin_edit
-          Sync.new(adapter: adapter, manifest: manifest, state_path: edit_state).run(upload: false)
+          Sync.new(adapter: adapter, manifest: manifest, state_path: edit_state, **polling).run(upload: false)
           File.write(state_path, JSON.generate({"phase" => "verified"}))
         end
       ensure
